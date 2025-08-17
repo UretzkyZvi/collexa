@@ -53,3 +53,15 @@ class Log(Base):
     level = Column(String(16), nullable=False, default="info")
     message = Column(Text, nullable=False)
     ts = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AgentKey(Base):
+    __tablename__ = "agent_keys"
+    id = Column(String(64), primary_key=True)
+    org_id = Column(String(64), nullable=False)
+    agent_id = Column(String(64), nullable=False)
+    name = Column(String(255))  # optional label
+    key_hash = Column(String(128), nullable=False)
+    created_by = Column(String(64))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    revoked_at = Column(DateTime(timezone=True), nullable=True)

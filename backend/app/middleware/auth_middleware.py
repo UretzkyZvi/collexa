@@ -43,7 +43,40 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if path.startswith("/v1") and not any(
             path.startswith(p) for p in PUBLIC_PREFIXES
         ):
+            # Accept either Bearer token or X-API-Key
+            api_key = request.headers.get("x-api-key")
             authz = request.headers.get("authorization", "")
+
+            if api_key and not authz:
+                # API key path: look up by hash; scope org/agent
+                from sqlalchemy.orm import Session
+                from app.db.session import SessionLocal
+                from app.db import models
+                import hashlib
+
+                key_hash = hashlib.sha256(api_key.encode("utf-8")).hexdigest()
+                db: Session = SessionLocal()
+                try:
+                    key_row = (
+                        db.query(models.AgentKey)
+                        .filter(models.AgentKey.key_hash == key_hash, models.AgentKey.revoked_at.is_(None))
+                        .first()
+                    )
+                finally:
+                    db.close()
+
+                if not key_row:
+                    return JSONResponse({"detail": "Invalid API key"}, status_code=401)
+
+                # Attach limited auth context (no user_id); org_id from key
+                request.state.auth = {
+                    "user_id": None,
+                    "org_id": key_row.org_id,
+                    "profile": {"auth": "api_key", "agent_id": key_row.agent_id},
+                    "access_token": None,
+                }
+                return await call_next(request)
+
             if not authz.lower().startswith("bearer "):
                 return JSONResponse({"detail": "Missing bearer token"}, status_code=401)
 

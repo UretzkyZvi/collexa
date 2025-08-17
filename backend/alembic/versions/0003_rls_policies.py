@@ -20,20 +20,21 @@ def upgrade() -> None:
     if conn.dialect.name != "postgresql":
         return
 
+    # Enable RLS on core tables
     op.execute("ALTER TABLE agents ENABLE ROW LEVEL SECURITY")
-    op.execute(
-        "CREATE POLICY org_isolation_agents ON agents USING (org_id = current_setting('app.org_id', true))"
-    )
-
     op.execute("ALTER TABLE runs ENABLE ROW LEVEL SECURITY")
-    op.execute(
-        "CREATE POLICY org_isolation_runs ON runs USING (org_id = current_setting('app.org_id', true))"
-    )
-
     op.execute("ALTER TABLE logs ENABLE ROW LEVEL SECURITY")
+
+    # Create org isolation policies
+    op.execute(
+        "CREATE POLICY org_isolation_agents ON agents USING (org_id = current_setting('app.org_id', true)::text)"
+    )
+    op.execute(
+        "CREATE POLICY org_isolation_runs ON runs USING (org_id = current_setting('app.org_id', true)::text)"
+    )
     # logs join on run_id -> ensure run belongs to org
     op.execute(
-        "CREATE POLICY org_isolation_logs ON logs USING (EXISTS (SELECT 1 FROM runs r WHERE r.id = logs.run_id AND r.org_id = current_setting('app.org_id', true)))"
+        "CREATE POLICY org_isolation_logs ON logs USING (EXISTS (SELECT 1 FROM runs r WHERE r.id = logs.run_id AND r.org_id = current_setting('app.org_id', true)::text))"
     )
 
 

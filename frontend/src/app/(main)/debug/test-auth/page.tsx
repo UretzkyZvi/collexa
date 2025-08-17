@@ -1,17 +1,22 @@
 "use client";
 import { useUser } from "@stackframe/stack";
+import { useAuthFetch } from "~/lib/authFetch";
 
 export default function TestAuthPage() {
   const user = useUser({ or: "redirect" });
-
+const authFetch = useAuthFetch();
   const run = async () => {
     const { accessToken } = await user.getAuthJson();
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents`, {
+    const teamId = (user as any)?.selectedTeam?.id ?? null;
+    const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
+      // authFetch will add X-Team-Id automatically if teamId is provided or selectedTeam is set
+      // Pass teamId explicitly in case selectedTeam isn't synced yet
+      ...(teamId ? { teamId } : {} as any),
       body: JSON.stringify({ brief: "e2e test" }),
     });
     const text = await res.text();
@@ -19,9 +24,10 @@ export default function TestAuthPage() {
   };
 
   const me = async () => {
-    const { accessToken } = await user.getAuthJson();
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/debug/me`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+    const teamId = (user as any)?.selectedTeam?.id ?? null;
+    const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/debug/me`, {
+      method: "GET",
+      ...(teamId ? { teamId } : {} as any),
     });
     const text = await res.text();
     alert(`${res.status} ${text}`);

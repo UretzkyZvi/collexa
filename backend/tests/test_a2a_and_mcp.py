@@ -24,7 +24,8 @@ def test_a2a_signature_and_fields(client):
     import hashlib
     import os
 
-    payload = {k: body[k] for k in body.keys() - {"alg", "signature"}}
+    # Preserve backend insertion order when recomputing signature
+    payload = {k: body[k] for k in ["id", "issuer", "endpoints", "capabilities"]}
     raw = json.dumps(payload, separators=(",", ":"))
     secret = os.getenv("APP_SIGNING_SECRET", "dev-secret").encode("utf-8")
     sig = hmac.new(secret, raw.encode("utf-8"), hashlib.sha256).hexdigest()

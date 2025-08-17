@@ -157,8 +157,12 @@ Acceptance Test
 - [x] Protected API with REST token verification (Stack /users/me) in FastAPI
 - [x] AuthZ: team-based org_id scoping and ownership checks on GET/POST agents
 - [x] Backend middleware: coarse auth on /v1/*, attaches auth context
+- [x] CORS/Preflight: auth middleware bypasses OPTIONS so CORSMiddleware can reply
+- [x] SSE Streams: auth middleware allows /v1/agents/{id}/logs and /v1/runs/{id}/stream (handler verifies via query token)
+- [x] Debug: GET /v1/debug/me returns auth context for troubleshooting
+
 - [x] Stricter endpoints: X-Team-Id mandatory for create/invoke; membership verified
-- [ ] Tenant isolation: Postgres Row-Level Security (RLS) policies (scaffolded: SET LOCAL app.org_id)
+- [x] Tenant isolation: Postgres Row-Level Security (RLS) policies + SET LOCAL app.org_id middleware + cross-org tests
 - [ ] API Keys: per-agent, hashed at rest, scoped to capabilities
 - [ ] Billing: Create Stripe customer on signup; POST /v1/billing/checkout; webhook receiver
 - [ ] Audit logs: actor_id, org_id, endpoint, agent_id, capability, result status
@@ -171,7 +175,7 @@ Acceptance Test
 
 - [x] useAuthFetch hook attaches Authorization and X-Team-Id
 - [x] Onboarding: create team and select team flows (non-skippable)
-- [x] Jest tests: auth fetch helper and onboarding components
+- [x] Jest tests: auth fetch helper, onboarding components, Playground invoke/stream, useAuthFetch X-Team-Id behavior
 - [x] UI library: shadcn/ui initialized (Button, Input, Card, Dialog, Label, Textarea, Select, Sidebar, Breadcrumb, Separator)
 - [x] Next middleware: redirect unauthenticated users (public paths allowlisted)
 - [x] Dashboard layout with Sidebar (inset), TeamSwitcher, UserButton
@@ -192,7 +196,7 @@ Acceptance Test
 ## Current Sprint (PoC acceptance — 1–2 weeks)
 
 Instructions Pack
-- [ ] API: GET /v1/agents/{agent_id}/instructions returns concrete snippets (n8n/Make/LangChain/OpenAI/Claude/MCP) — IN PROGRESS
+- [x] API: GET /v1/agents/{agent_id}/instructions returns concrete snippets (n8n/Make/LangChain/OpenAI/Claude/MCP) — DONE
 - [ ] UI: Instructions page with copy-to-clipboard and <host>/<agent-id> variableization — IN PROGRESS
 
 Streaming Logs + Persistence
@@ -202,11 +206,12 @@ Streaming Logs + Persistence
 
 Logs UI
 - [x] Endpoints: GET /v1/runs and GET /v1/runs/{id}/logs
-- [x] Minimal Logs page with Live toggle; filters (agent/status) — PARTIAL
+- [x] Minimal Logs page with Live toggle; filters (agent/status)
 
 Security & Platform
-- [ ] Postgres RLS policies in place + middleware to SET LOCAL app.org_id; enforcement tests
-- [ ] CI on PRs: frontend (lint, typecheck, Jest), backend (ruff, black --check, mypy, pytest)
+- [x] Postgres RLS policies in place + middleware to SET LOCAL app.org_id; enforcement tests
+- [x] CI on PRs: frontend (lint, typecheck, Jest), backend (ruff, black --check, mypy, pytest)
+- [x] FastAPI tests: CORS OPTIONS bypass, SSE path bypass, /v1/debug/me auth context
 
 Optional (in parallel): Protocols
 - [ ] /.well-known/a2a/{agent_id}.json — signed (static initial)

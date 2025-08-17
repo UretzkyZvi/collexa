@@ -6,6 +6,7 @@ import { Card } from "~/components/ui/card";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import { Label } from "~/components/ui/label";
+import { env } from "~/env";
 
 export default function NewAgentPage() {
   const [brief, setBrief] = useState("");
@@ -17,7 +18,7 @@ export default function NewAgentPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents`, {
+      const res = await authFetch(`${env.NEXT_PUBLIC_API_BASE_URL}/v1/agents`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ brief }),

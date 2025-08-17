@@ -1,21 +1,21 @@
 "use client";
 import { useMemo, useState } from "react";
-import { useUser } from "@stackframe/stack";
+import { type CurrentInternalUser, type CurrentUser, type Team, useUser } from "@stackframe/stack";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 
 export function TeamSwitcher() {
-  const user = useUser();
-  const teams = (user as any)?.useTeams?.() ?? [];
-  const selectedTeam = (user as any)?.selectedTeam ?? null;
+  const user = useUser() as CurrentUser | CurrentInternalUser | null;
+  const teams = user?.useTeams?.() ?? [];
+  const selectedTeam = user?.selectedTeam ?? null;
   const [pending, setPending] = useState<string | null>(null);
 
-  const items = useMemo(() => teams.map((t: any) => ({ id: t.id, name: t.displayName ?? t.id })), [teams]);
+  const items = useMemo(() => teams.map((t: Team) => ({ id: t.id as string, name: (t.displayName ?? t.id) as string })), [teams]);
 
   async function onChange(val: string) {
     setPending(val);
     try {
-      const team = teams.find((t: any) => t.id === val);
-      if (team) await (user as any).setSelectedTeam(team);
+      const team = teams.find((t: Team) => t.id as string === val);
+      if (team) await user?.setSelectedTeam(team);
     } finally {
       setPending(null);
     }
@@ -27,7 +27,7 @@ export function TeamSwitcher() {
         <SelectValue placeholder="Select team" />
       </SelectTrigger>
       <SelectContent>
-        {items.map((t) => (
+        {items.map((t: { id: string; name: string }) => (
           <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
         ))}
       </SelectContent>

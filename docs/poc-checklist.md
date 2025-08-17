@@ -124,7 +124,7 @@ Acceptance tests
 - [x] API: POST /v1/agents — persists to DB; returns id/endpoints (requires X-Team-Id)
 - [ ] Builder stub: parse brief, select a mock capability kit, produce an Agent Descriptor
 - [x] Persist agent in Postgres; return REST base URLs
-- [ ] UI: show agent summary and “Get Instructions Pack” CTA
+- [x] UI: show agent summary and “Get Instructions Pack” CTA
 
 - [x] Frontend: useAuthFetch attaches X-Team-Id automatically from selected team
 - [x] Frontend middleware redirects unauthenticated to /handler/sign-in (public paths allowlisted)
@@ -139,7 +139,7 @@ Acceptance Test
 - [x] UI: copy-to-clipboard for each snippet; placeholder host vars
 
 Acceptance Test
-- [ ] Paste the n8n or Make HTTP example and receive a 200 with mock payload
+- [x] Paste the n8n or Make HTTP example and receive a 200 with mock payload
 
 ## Milestone D — Invoke + Streaming Logs
 
@@ -149,7 +149,7 @@ Acceptance Test
 - [x] Persist run record with status and output
 
 Acceptance Test
-- [ ] See logs streaming in UI and final JSON result rendered
+- [x] See logs streaming in UI and final JSON result rendered
 
 ## Milestone E — Baseline Security and Billing
 
@@ -197,7 +197,7 @@ Acceptance Test
 
 Instructions Pack
 - [x] API: GET /v1/agents/{agent_id}/instructions returns concrete snippets (n8n/Make/LangChain/OpenAI/Claude/MCP) — DONE
-- [ ] UI: Instructions page with copy-to-clipboard and <host>/<agent-id> variableization — IN PROGRESS
+- [x] UI: Instructions page with copy-to-clipboard and <host>/<agent-id> variableization — DONE (PR #23)
 
 Streaming Logs + Persistence
 - [x] Backend: SSE endpoints (agent-level and per-run) for live logs during invoke

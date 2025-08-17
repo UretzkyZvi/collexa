@@ -37,6 +37,12 @@ async def create_agent(payload: Dict[str, Any], auth=Depends(require_team), db: 
         "capabilities": [],
     }
 
+
+@router.get("/agents")
+async def list_agents(auth=Depends(require_auth), db: Session = Depends(get_db)):
+    rows = db.query(models.Agent).filter(models.Agent.org_id == auth.get("org_id")).order_by(models.Agent.created_at.desc()).limit(100).all()
+    return [{"id": r.id, "display_name": r.display_name} for r in rows]
+
 @router.get("/agents/{agent_id}")
 async def get_agent(agent_id: str, auth=Depends(require_auth), db: Session = Depends(get_db)):
     # Enforce that the agent belongs to caller's org

@@ -29,6 +29,16 @@ class AuthMiddleware(BaseHTTPMiddleware):
     ):
         path = request.url.path
 
+        # Let preflight CORS requests pass through to CORSMiddleware
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
+        # Allow unauthenticated access to SSE log streams; they verify via query token
+        if (path.startswith("/v1/agents/") and path.endswith("/logs")) or (
+            path.startswith("/v1/runs/") and path.endswith("/stream")
+        ):
+            return await call_next(request)
+
         # Only guard API v1 (skip known public paths)
         if path.startswith("/v1") and not any(
             path.startswith(p) for p in PUBLIC_PREFIXES

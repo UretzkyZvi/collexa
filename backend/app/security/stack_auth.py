@@ -33,10 +33,22 @@ def verify_team_membership(team_id: str, access_token: str) -> Dict[str, Any]:
     Uses Stack's team-member-profiles endpoint. Returns the team member profile if valid.
     """
     url = f"{STACK_API_BASE}/team-member-profiles/{team_id}/me"
+    # Include full server context to avoid ambiguous auth on Stack API
     headers = {
+        "x-stack-access-type": "server",
+        "x-stack-project-id": STACK_PROJECT_ID,
+        "x-stack-secret-server-key": STACK_SECRET_SERVER_KEY,
         "x-stack-access-token": access_token,
     }
     r = requests.get(url, headers=headers, timeout=10)
     if r.status_code != 200:
-        raise HTTPException(status_code=403, detail="Not a member of this team")
+        # Bubble up more helpful error details when available
+        detail = "Not a member of this team"
+        try:
+            data = r.json()
+            if isinstance(data, dict) and data.get("message"):
+                detail = data.get("message")
+        except Exception:
+            pass
+        raise HTTPException(status_code=403, detail=detail)
     return r.json()

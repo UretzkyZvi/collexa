@@ -33,9 +33,9 @@ import OnboardingGate from "~/components/OnboardingGate";
 
 const links = [
   { href: "/", label: "Dashboard" },
-  { href: "/agents/new", label: "Agents" },
+  { href: "/agents", label: "Agents" },
   { href: "/playground", label: "Playground" },
-  { href: "/logs", label: "Logs" },
+  { href: "/execution-logs", label: "Logs" },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -43,6 +43,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   return (
     <SidebarProvider className="bg-muted/30" data-variant="inset">
+      <OnboardingGate />
+
       <Sidebar variant="inset" collapsible="icon">
         <SidebarHeader>
           <div className="px-2 py-1">

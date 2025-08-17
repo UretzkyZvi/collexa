@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useUser } from "@stackframe/stack";
 import { useAuthFetch } from "~/lib/authFetch";
 import { Card } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -14,6 +15,7 @@ export default function PlaygroundPage() {
   const [stream, setStream] = useState<string[]>([]);
   const evtSrcRef = useRef<EventSource | null>(null);
   const authFetch = useAuthFetch();
+  const user = useUser();
 
   async function startInvoke() {
     setStream([]);
@@ -24,9 +26,9 @@ export default function PlaygroundPage() {
     });
 
     if (evtSrcRef.current) evtSrcRef.current.close();
-    // SSE: include auth token via ?token= and team via ?team= for PoC simplicity
-    const { accessToken } = await (await (useAuthFetch as any)().user?.getAuthJson?.()) ?? { accessToken: "" };
-    const teamId = (useAuthFetch as any)().user?.selectedTeam?.id ?? "";
+    // SSE: include auth token via ?token= and team via ?team=
+    const { accessToken } = await user!.getAuthJson();
+    const teamId = (user as any)?.selectedTeam?.id ?? "";
     const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${agentId}/logs?since=now&token=${encodeURIComponent(accessToken)}&team=${encodeURIComponent(teamId)}`;
     const es = new EventSource(url);
     es.onmessage = (e) => setStream((s) => [...s, e.data]);

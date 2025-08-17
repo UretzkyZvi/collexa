@@ -55,6 +55,12 @@ async def list_agents(auth=Depends(require_auth), db: Session = Depends(get_db))
     return [{"id": r.id, "display_name": r.display_name} for r in rows]
 
 
+
+@router.get("/debug/me")
+async def debug_me(auth=Depends(require_auth)):
+    return auth
+
+
 @router.get("/agents/{agent_id}")
 async def get_agent(
     agent_id: str, auth=Depends(require_auth), db: Session = Depends(get_db)

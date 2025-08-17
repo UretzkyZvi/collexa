@@ -6,7 +6,7 @@ This checklist tracks the minimum features and quality gates to accept each Phas
 
 - [x] Repo scaffolding: Next.js (TypeScript, App Router) + FastAPI (Python 3.11)
 - [x] Env/config: .env for UI and API; secrets via .env/.env.local
-- [ ] CI: Lint + unit tests (UI: Jest/RTL; API: pytest) on PRs
+- [x] CI: Lint + unit tests (UI: Jest/RTL; API: pytest) on PRs
 - [x] Health endpoints: UI (/health) and API (GET /health)
 - [x] CORS set for UI host (localhost:3000)
 - [x] UI library: shadcn/ui initialized and core components added (Button, Input, Card, Dialog, Label, Textarea, Select, Sidebar, Breadcrumb, Separator)
@@ -135,8 +135,8 @@ Acceptance Test
 
 ## Milestone C — Instructions Pack
 
-- [ ] API: GET /v1/agents/{agent_id}/instructions — returns n8n/Make/LangChain/OpenAI/Claude/MCP snippets
-- [ ] UI: copy-to-clipboard for each snippet; placeholder host vars
+- [x] API: GET /v1/agents/{agent_id}/instructions — returns n8n/Make/LangChain/OpenAI/Claude/MCP snippets
+- [x] UI: copy-to-clipboard for each snippet; placeholder host vars
 
 Acceptance Test
 - [ ] Paste the n8n or Make HTTP example and receive a 200 with mock payload
@@ -144,9 +144,9 @@ Acceptance Test
 ## Milestone D — Invoke + Streaming Logs
 
 - [x] API: POST /v1/agents/{agent_id}/invoke — accepts capability + input (requires X-Team-Id)
-- [ ] Streaming: SSE or WebSocket endpoint for live logs during invocation
-- [x] UI Playground: invoke action (basic), capture future stream
-- [ ] Persist run record with status and timing
+- [x] Streaming: SSE endpoints for live logs (agent-level and per-run)
+- [x] UI Playground: invoke action and consume stream (PoC)
+- [x] Persist run record with status and output
 
 Acceptance Test
 - [ ] See logs streaming in UI and final JSON result rendered
@@ -183,8 +183,8 @@ Acceptance Test
 
 ## Milestone F — A2A Descriptor + MCP Adapter (Basic)
 
-- [ ] API: /.well-known/a2a/{agent_id}.json — signed capability descriptor
-- [ ] MCP: Basic tool advertisement for the agent via WebSocket
+- [x] API: /.well-known/a2a/{agent_id}.json — signed capability descriptor (HS256)
+- [x] MCP: Basic tool advertisement for the agent via WebSocket (list + echo)
 - [ ] Quick demo: external MCP client lists tools successfully
 
 Acceptance Test
@@ -196,13 +196,13 @@ Instructions Pack
 - [ ] UI: Instructions page with copy-to-clipboard and <host>/<agent-id> variableization — IN PROGRESS
 
 Streaming Logs + Persistence
-- [ ] Backend: SSE endpoint for live logs during invoke
-- [ ] Frontend: Playground subscribes via EventSource and renders progressive logs
-- [ ] Persistence: create Run on start; append Log events; finalize status + output
+- [x] Backend: SSE endpoints (agent-level and per-run) for live logs during invoke
+- [x] Frontend: Playground subscribes via EventSource and renders progressive logs
+- [x] Persistence: create Run on start; append Log events; finalize status + output
 
 Logs UI
-- [ ] Endpoints: GET /v1/runs and GET /v1/runs/{id}/logs
-- [ ] Minimal Logs page with filters (agent, capability)
+- [x] Endpoints: GET /v1/runs and GET /v1/runs/{id}/logs
+- [x] Minimal Logs page with Live toggle; filters (agent/status) — PARTIAL
 
 Security & Platform
 - [ ] Postgres RLS policies in place + middleware to SET LOCAL app.org_id; enforcement tests

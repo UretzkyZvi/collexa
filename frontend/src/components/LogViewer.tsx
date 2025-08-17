@@ -4,6 +4,21 @@ import { Virtuoso } from "react-virtuoso";
 
 export type LogEvent = { id?: string | number; ts?: string; level?: string; message: string };
 
+function fmtTs(ts?: string) {
+  if (!ts) return "";
+  try {
+    const d = new Date(ts);
+    return d.toLocaleTimeString();
+  } catch {
+    return ts;
+  }
+}
+
+function truncate(msg: string, len = 200) {
+  if (!msg) return "";
+  return msg.length > len ? msg.slice(0, len) + " …" : msg;
+}
+
 export function LogViewer({ events }: { events: LogEvent[] }) {
   const virtuosoRef = useRef<any>(null);
   const [atBottom, setAtBottom] = useState(true);
@@ -20,10 +35,10 @@ export function LogViewer({ events }: { events: LogEvent[] }) {
         data={events}
         followOutput={(isAtBottom) => (isAtBottom ? "auto" : false)}
         itemContent={(_, ev) => (
-          <div className="whitespace-pre-wrap text-xs">
-            {ev.ts ? `${ev.ts} ` : ""}
+          <div className="whitespace-pre-wrap break-words text-xs">
+            {ev.ts ? `${fmtTs(ev.ts)} ` : ""}
             {ev.level ? `[${ev.level}] ` : ""}
-            {ev.message}
+            {truncate(ev.message)}
           </div>
         )}
         atBottomStateChange={(isAtBottom) => setAtBottom(isAtBottom)}

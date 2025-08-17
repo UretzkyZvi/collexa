@@ -43,6 +43,7 @@ async def require_auth(
             or user_id
         )
 
+    # Set RLS context for this session
     set_rls_for_session(db, org_id)
 
     ctx = {
@@ -89,6 +90,8 @@ async def require_team(
         raise HTTPException(status_code=401, detail="Invalid token (no user id)")
 
     stack_auth.verify_team_membership(x_team_id, token)  # may raise 403
+
+    # Set RLS context for this session
     set_rls_for_session(db, x_team_id)
 
     ctx = {

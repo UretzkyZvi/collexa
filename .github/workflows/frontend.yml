@@ -26,10 +26,10 @@ jobs:
       - name: Typecheck
         working-directory: frontend
         run: pnpm typecheck
-      - name: Lint (skip if not configured)
+      - name: Lint
         working-directory: frontend
-        run: pnpm run -s lint || echo "lint skipped"
+        run: pnpm run -s lint
       - name: Test
         working-directory: frontend
-        run: pnpm test
+        run: pnpm test -- --ci
 

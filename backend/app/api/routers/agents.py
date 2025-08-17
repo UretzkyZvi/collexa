@@ -63,9 +63,17 @@ async def invoke_agent(agent_id: str, payload: dict, auth=Depends(require_team),
     db.commit()
 
     q = _queue_for_agent(agent_id)
+    # persist + enqueue logs
+    log1 = models.Log(run_id=run_id, level="info", message="started")
+    db.add(log1)
     await q.put(json.dumps({"type": "log", "level": "info", "message": "started", "run_id": run_id}))
+    db.commit()
     await asyncio.sleep(0.05)
+
+    log2 = models.Log(run_id=run_id, level="info", message="doing-work")
+    db.add(log2)
     await q.put(json.dumps({"type": "log", "level": "info", "message": "doing-work", "run_id": run_id}))
+    db.commit()
     await asyncio.sleep(0.05)
 
     # finalize
@@ -74,7 +82,10 @@ async def invoke_agent(agent_id: str, payload: dict, auth=Depends(require_team),
     run.output = result
     db.commit()
 
-    await q.put(json.dumps({"type": "complete", "run_id": run_id, "output": result}))
+    complete_msg = json.dumps({"type": "complete", "run_id": run_id, "output": result})
+    db.add(models.Log(run_id=run_id, level="info", message=complete_msg))
+    db.commit()
+    await q.put(complete_msg)
 
     return {"agent_id": agent_id, "status": run.status, "run_id": run_id, "result": result}
 

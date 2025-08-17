@@ -24,14 +24,14 @@ jobs:
           pip install black ruff mypy pytest
       - name: Ruff
         working-directory: backend
-        run: ruff check . || true
+        run: ruff check .
       - name: Black (check)
         working-directory: backend
-        run: black --check . || true
+        run: black --check .
       - name: Mypy
         working-directory: backend
-        run: mypy app || true
+        run: mypy app
       - name: Pytest
         working-directory: backend
-        run: pytest -q || true
+        run: pytest -q
 

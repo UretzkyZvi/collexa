@@ -6,26 +6,27 @@ jest.mock("~/lib/authFetch", () => ({ useAuthFetch: () => async () => ({ ok: tru
   { id: "make", label: "Make.com (HTTP)", language: "text", code: "POST https://api.<host>/v1/agents/<agent-id>/invoke" },
 ] }) }) }));
 
+jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn() }) }));
 import InstructionsPage from "../page";
-
-Object.defineProperty(window, 'location', { value: { host: 'localhost:3000' } });
-
 test("Instructions page renders and copies with placeholders", async () => {
   render(<InstructionsPage params={{ id: "agent-xyz" }} /> as any);
 
   // Wait for content
   await screen.findByText(/Instructions Pack/i);
-  expect(screen.getByText(/n8n/)).toBeInTheDocument();
+  await screen.findByText(/n8n/);
 
   // Spy on clipboard
   const writeText = jest.fn();
   Object.assign(navigator, { clipboard: { writeText } });
 
   // Click copy on first section
-  fireEvent.click(screen.getAllByText(/copy/i)[0]);
+  const copyButtons = await screen.findAllByText(/copy/i);
+  fireEvent.click(copyButtons[0] as HTMLElement);
   await waitFor(() => expect(writeText).toHaveBeenCalled());
   const copied = writeText.mock.calls[0][0];
-  expect(copied).toMatch(/api\.localhost:3000/);
+  const host = window.location.host;
+  expect(copied).toContain(`api.${host}`);
+
   expect(copied).toMatch(/agents\/agent-xyz\/invoke/);
 });
 

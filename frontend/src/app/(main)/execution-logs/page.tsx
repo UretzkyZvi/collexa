@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthFetch } from "~/lib/authFetch";
 import { Card } from "~/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { LogViewer } from "~/components/LogViewer";
 
 export default function LogsPage() {
   const authFetch = useAuthFetch();
@@ -25,6 +26,8 @@ export default function LogsPage() {
     })();
   }, [selectedRun]);
 
+  const events = useMemo(() => logs.map((l) => ({ ts: l.ts, level: l.level, message: l.message })), [logs]);
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">Recent Runs</h1>
@@ -38,10 +41,8 @@ export default function LogsPage() {
           </SelectContent>
         </Select>
       </Card>
-      <Card className="p-4 text-sm">
-        {logs.map((l, i) => (
-          <div key={i}>{l.ts} [{l.level}] {l.message}</div>
-        ))}
+      <Card className="p-4">
+        <LogViewer events={events} />
       </Card>
     </div>
   );

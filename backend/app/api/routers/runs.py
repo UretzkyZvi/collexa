@@ -7,8 +7,14 @@ from app.db import models
 
 router = APIRouter()
 
+
 @router.get("/runs")
-async def list_runs(agent_id: Optional[str] = Query(None), status: Optional[str] = Query(None), auth=Depends(require_auth), db: Session = Depends(get_db)):
+async def list_runs(
+    agent_id: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    auth=Depends(require_auth),
+    db: Session = Depends(get_db),
+):
     q = db.query(models.Run).filter(models.Run.org_id == auth.get("org_id"))
     if agent_id:
         q = q.filter(models.Run.agent_id == agent_id)
@@ -25,15 +31,32 @@ async def list_runs(agent_id: Optional[str] = Query(None), status: Optional[str]
         for r in rows
     ]
 
+
 @router.get("/runs/{run_id}/logs")
-async def get_run_logs(run_id: str, auth=Depends(require_auth), db: Session = Depends(get_db)):
+async def get_run_logs(
+    run_id: str, auth=Depends(require_auth), db: Session = Depends(get_db)
+):
     # Ensure run belongs to org
-    run = db.query(models.Run).filter(models.Run.id == run_id, models.Run.org_id == auth.get("org_id")).first()
+    run = (
+        db.query(models.Run)
+        .filter(models.Run.id == run_id, models.Run.org_id == auth.get("org_id"))
+        .first()
+    )
     if not run:
         raise HTTPException(status_code=404, detail="Run not found")
-    rows = db.query(models.Log).filter(models.Log.run_id == run_id).order_by(models.Log.ts.asc()).limit(1000).all()
+    rows = (
+        db.query(models.Log)
+        .filter(models.Log.run_id == run_id)
+        .order_by(models.Log.ts.asc())
+        .limit(1000)
+        .all()
+    )
     return [
-        {"id": l.id, "level": l.level, "message": l.message, "ts": l.ts.isoformat() if l.ts else None}
-        for l in rows
+        {
+            "id": row.id,
+            "level": row.level,
+            "message": row.message,
+            "ts": row.ts.isoformat() if row.ts else None,
+        }
+        for row in rows
     ]
-

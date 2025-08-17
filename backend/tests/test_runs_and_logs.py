@@ -1,7 +1,7 @@
-import json
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
+
 
 @pytest.fixture(scope="session")
 def client():
@@ -27,12 +27,20 @@ def test_invoke_and_stream(client, monkeypatch):
     monkeypatch.setattr(deps, "require_auth", fake_require_auth)
 
     # Create agent row directly via endpoint
-    r = client.post("/v1/agents", json={"brief": "t"}, headers={"X-Team-Id": "o1", "Authorization": "Bearer fake"})
+    r = client.post(
+        "/v1/agents",
+        json={"brief": "t"},
+        headers={"X-Team-Id": "o1", "Authorization": "Bearer fake"},
+    )
     assert r.status_code == 200
     agent_id = r.json()["agent_id"]
 
     # Invoke
-    r2 = client.post(f"/v1/agents/{agent_id}/invoke", json={"capability": "c", "input": {}}, headers={"X-Team-Id": "o1", "Authorization": "Bearer fake"})
+    r2 = client.post(
+        f"/v1/agents/{agent_id}/invoke",
+        json={"capability": "c", "input": {}},
+        headers={"X-Team-Id": "o1", "Authorization": "Bearer fake"},
+    )
     assert r2.status_code == 200
     run_id = r2.json()["run_id"]
 
@@ -43,4 +51,3 @@ def test_invoke_and_stream(client, monkeypatch):
     # Fetch logs by run
     gl = client.get(f"/v1/runs/{run_id}/logs", headers={"Authorization": "Bearer fake"})
     assert gl.status_code in (200, 401)
-

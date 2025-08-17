@@ -1,10 +1,21 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request, Query
+from starlette.responses import StreamingResponse
 from app.api.deps import require_auth, require_team
 from app.db.session import get_db
 from sqlalchemy.orm import Session
 from app.db import models
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+import asyncio
+import json
 import uuid
+
+# In-memory log queues per agent for SSE (PoC only)
+_log_queues: dict[str, asyncio.Queue[str]] = {}
+
+def _queue_for_agent(agent_id: str) -> asyncio.Queue[str]:
+    if agent_id not in _log_queues:
+        _log_queues[agent_id] = asyncio.Queue(maxsize=1000)
+    return _log_queues[agent_id]
 
 router = APIRouter()
 
@@ -44,9 +55,28 @@ async def get_agent(agent_id: str, auth=Depends(require_auth), db: Session = Dep
     }
 
 @router.post("/agents/{agent_id}/invoke")
-async def invoke_agent(agent_id: str, payload: dict, auth=Depends(require_team)):
-    # TODO: enqueue/run and stream logs
-    return {"agent_id": agent_id, "status": "queued", "result": {}}
+async def invoke_agent(agent_id: str, payload: dict, auth=Depends(require_team), db: Session = Depends(get_db)):
+    # Create a Run row, emit a few mock log lines, finalize with a result
+    run_id = str(uuid.uuid4())
+    run = models.Run(id=run_id, agent_id=agent_id, org_id=auth.get("org_id"), invoked_by=auth.get("user_id"), status="running", input=payload)
+    db.add(run)
+    db.commit()
+
+    q = _queue_for_agent(agent_id)
+    await q.put(json.dumps({"type": "log", "level": "info", "message": "started", "run_id": run_id}))
+    await asyncio.sleep(0.05)
+    await q.put(json.dumps({"type": "log", "level": "info", "message": "doing-work", "run_id": run_id}))
+    await asyncio.sleep(0.05)
+
+    # finalize
+    result = {"echo": payload}
+    run.status = "succeeded"
+    run.output = result
+    db.commit()
+
+    await q.put(json.dumps({"type": "complete", "run_id": run_id, "output": result}))
+
+    return {"agent_id": agent_id, "status": run.status, "run_id": run_id, "result": result}
 
 @router.get("/agents/{agent_id}/instructions")
 async def get_instructions(agent_id: str, auth=Depends(require_auth), db: Session = Depends(get_db)):
@@ -107,6 +137,49 @@ async def get_instructions(agent_id: str, auth=Depends(require_auth), db: Sessio
             {"id": "a2a", "label": "A2A Descriptor", "language": "text", "code": a2a_url},
         ],
     }
+
+@router.get("/agents/{agent_id}/logs")
+async def stream_logs(
+    agent_id: str,
+    request: Request,
+    since: Optional[str] = Query(None),
+    token: Optional[str] = Query(None),
+    team: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """SSE log stream.
+    Accepts token/team as query params for EventSource (cannot set headers).
+    Falls back to CORS-protected origin and anonymous if not provided (PoC only).
+    """
+    # Minimal auth: if token provided, verify and set RLS
+    try:
+        if token:
+            from app.security import stack_auth
+            profile = stack_auth.verify_stack_access_token(token)
+            org_id = team or profile.get("selectedTeamId") or profile.get("org_id") or profile.get("id")
+            from app.db.session import set_rls_for_session
+            set_rls_for_session(db, org_id)
+    except Exception:
+        # On failure, terminate stream
+        async def err():
+            yield "data: {\"type\": \"error\", \"message\": \"auth failed\"}\n\n"
+        return StreamingResponse(err(), media_type="text/event-stream")
+
+    q = _queue_for_agent(agent_id)
+
+    async def event_generator():
+        while True:
+            if await request.is_disconnected():
+                break
+            try:
+                msg = await asyncio.wait_for(q.get(), timeout=30)
+            except asyncio.TimeoutError:
+                # Keep-alive comment
+                yield ": keep-alive\n\n"
+                continue
+            yield f"data: {msg}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @router.get("/.well-known/a2a/{agent_id}.json")
 async def a2a_descriptor(agent_id: str):

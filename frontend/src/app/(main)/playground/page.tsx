@@ -24,7 +24,10 @@ export default function PlaygroundPage() {
     });
 
     if (evtSrcRef.current) evtSrcRef.current.close();
-    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${agentId}/logs?since=now`;
+    // SSE: include auth token via ?token= and team via ?team= for PoC simplicity
+    const { accessToken } = await (await (useAuthFetch as any)().user?.getAuthJson?.()) ?? { accessToken: "" };
+    const teamId = (useAuthFetch as any)().user?.selectedTeam?.id ?? "";
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${agentId}/logs?since=now&token=${encodeURIComponent(accessToken)}&team=${encodeURIComponent(teamId)}`;
     const es = new EventSource(url);
     es.onmessage = (e) => setStream((s) => [...s, e.data]);
     es.onerror = () => es.close();

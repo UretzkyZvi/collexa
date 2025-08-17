@@ -8,14 +8,10 @@ from typing import Any, Dict, Optional
 import asyncio
 import json
 import uuid
-
-# In-memory log queues per agent for SSE (PoC only)
-_log_queues: dict[str, asyncio.Queue[str]] = {}
-
-def _queue_for_agent(agent_id: str) -> asyncio.Queue[str]:
-    if agent_id not in _log_queues:
-        _log_queues[agent_id] = asyncio.Queue(maxsize=1000)
-    return _log_queues[agent_id]
+import os
+import hmac
+import hashlib
+from app.streams import queue_for_agent, queue_for_run
 
 router = APIRouter()
 
@@ -62,17 +58,23 @@ async def invoke_agent(agent_id: str, payload: dict, auth=Depends(require_team),
     db.add(run)
     db.commit()
 
-    q = _queue_for_agent(agent_id)
-    # persist + enqueue logs
+    # persist + enqueue logs (both per-agent and per-run streams)
+    agent_q = queue_for_agent(agent_id)
+    run_q = queue_for_run(run_id)
+
     log1 = models.Log(run_id=run_id, level="info", message="started")
     db.add(log1)
-    await q.put(json.dumps({"type": "log", "level": "info", "message": "started", "run_id": run_id}))
+    msg1 = json.dumps({"type": "log", "level": "info", "message": "started", "run_id": run_id})
+    await agent_q.put(msg1)
+    await run_q.put(msg1)
     db.commit()
     await asyncio.sleep(0.05)
 
     log2 = models.Log(run_id=run_id, level="info", message="doing-work")
     db.add(log2)
-    await q.put(json.dumps({"type": "log", "level": "info", "message": "doing-work", "run_id": run_id}))
+    msg2 = json.dumps({"type": "log", "level": "info", "message": "doing-work", "run_id": run_id})
+    await agent_q.put(msg2)
+    await run_q.put(msg2)
     db.commit()
     await asyncio.sleep(0.05)
 
@@ -85,7 +87,8 @@ async def invoke_agent(agent_id: str, payload: dict, auth=Depends(require_team),
     complete_msg = json.dumps({"type": "complete", "run_id": run_id, "output": result})
     db.add(models.Log(run_id=run_id, level="info", message=complete_msg))
     db.commit()
-    await q.put(complete_msg)
+    await agent_q.put(complete_msg)
+    await run_q.put(complete_msg)
 
     return {"agent_id": agent_id, "status": run.status, "run_id": run_id, "result": result}
 
@@ -158,11 +161,9 @@ async def stream_logs(
     team: Optional[str] = Query(None),
     db: Session = Depends(get_db),
 ):
-    """SSE log stream.
+    """SSE log stream (agent-level).
     Accepts token/team as query params for EventSource (cannot set headers).
-    Falls back to CORS-protected origin and anonymous if not provided (PoC only).
     """
-    # Minimal auth: if token provided, verify and set RLS
     try:
         if token:
             from app.security import stack_auth
@@ -171,12 +172,11 @@ async def stream_logs(
             from app.db.session import set_rls_for_session
             set_rls_for_session(db, org_id)
     except Exception:
-        # On failure, terminate stream
         async def err():
             yield "data: {\"type\": \"error\", \"message\": \"auth failed\"}\n\n"
         return StreamingResponse(err(), media_type="text/event-stream")
 
-    q = _queue_for_agent(agent_id)
+    q = queue_for_agent(agent_id)
 
     async def event_generator():
         while True:
@@ -185,7 +185,43 @@ async def stream_logs(
             try:
                 msg = await asyncio.wait_for(q.get(), timeout=30)
             except asyncio.TimeoutError:
-                # Keep-alive comment
+                yield ": keep-alive\n\n"
+                continue
+            yield f"data: {msg}\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@router.get("/runs/{run_id}/stream")
+async def stream_run_logs(
+    run_id: str,
+    request: Request,
+    token: Optional[str] = Query(None),
+    team: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """SSE stream for a specific run."""
+    try:
+        if token:
+            from app.security import stack_auth
+            profile = stack_auth.verify_stack_access_token(token)
+            org_id = team or profile.get("selectedTeamId") or profile.get("org_id") or profile.get("id")
+            from app.db.session import set_rls_for_session
+            set_rls_for_session(db, org_id)
+    except Exception:
+        async def err():
+            yield "data: {\"type\": \"error\", \"message\": \"auth failed\"}\n\n"
+        return StreamingResponse(err(), media_type="text/event-stream")
+
+    q = queue_for_run(run_id)
+
+    async def event_generator():
+        while True:
+            if await request.is_disconnected():
+                break
+            try:
+                msg = await asyncio.wait_for(q.get(), timeout=30)
+            except asyncio.TimeoutError:
                 yield ": keep-alive\n\n"
                 continue
             yield f"data: {msg}\n\n"
@@ -194,10 +230,18 @@ async def stream_logs(
 
 @router.get("/.well-known/a2a/{agent_id}.json")
 async def a2a_descriptor(agent_id: str):
-    # TODO: real signed descriptor
-    return {
+    secret = os.getenv("APP_SIGNING_SECRET", "dev-secret")
+    payload = {
         "id": agent_id,
-        "capabilities": [],
-        "signature": "TODO",
+        "issuer": "collexa",
+        "endpoints": {
+            "invoke": f"/v1/agents/{agent_id}/invoke",
+            "logs": f"/v1/agents/{agent_id}/logs",
+            "runs": "/v1/runs",
+        },
+        "capabilities": ["invoke", "stream_logs", "list_runs"],
     }
+    body = json.dumps(payload, separators=(",", ":"))
+    sig = hmac.new(secret.encode("utf-8"), body.encode("utf-8"), hashlib.sha256).hexdigest()
+    return {**payload, "alg": "HS256", "signature": sig}
 

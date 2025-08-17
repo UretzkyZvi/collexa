@@ -5,6 +5,7 @@ from app.api.routers.agents import router as agents_router
 from app.api.routers.billing import router as billing_router
 from app.api.routers.runs import router as runs_router
 from app.middleware.auth_middleware import AuthMiddleware
+from app.mcp import router as mcp_router
 
 app = FastAPI(title="Collexa API", version="0.1.0")
 
@@ -28,4 +29,5 @@ async def health():
 app.include_router(agents_router, prefix="/v1")
 app.include_router(billing_router, prefix="/v1")
 app.include_router(runs_router, prefix="/v1")
+app.include_router(mcp_router)
 

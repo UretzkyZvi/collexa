@@ -8,7 +8,6 @@ jest.mock("~/lib/authFetch", () => ({ useAuthFetch: () => async () => ({ ok: tru
 
 jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn() }) }));
 import InstructionsPage from "../page";
-
 test("Instructions page renders and copies with placeholders", async () => {
   render(<InstructionsPage params={{ id: "agent-xyz" }} /> as any);
 
@@ -27,6 +26,7 @@ test("Instructions page renders and copies with placeholders", async () => {
   const copied = writeText.mock.calls[0][0];
   const host = window.location.host;
   expect(copied).toContain(`api.${host}`);
+
   expect(copied).toMatch(/agents\/agent-xyz\/invoke/);
 });
 

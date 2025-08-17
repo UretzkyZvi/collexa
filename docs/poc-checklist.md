@@ -189,7 +189,7 @@ Acceptance Test
 
 - [x] API: /.well-known/a2a/{agent_id}.json — signed capability descriptor (HS256)
 - [x] MCP: Basic tool advertisement for the agent via WebSocket (list + echo)
-- [ ] Quick demo: external MCP client lists tools successfully
+- [x] Quick demo: external MCP client lists tools successfully (see docs/mcp-validation.md)
 
 Acceptance Test
 

@@ -16,6 +16,7 @@ def test_runs_list_empty(client):
 def test_invoke_and_stream(client, monkeypatch):
     # Monkeypatch require_team and require_auth to bypass external auth in tests
     from app.api import deps
+    from app.security import stack_auth
 
     async def fake_require_team(*args, **kwargs):
         return {"user_id": "u1", "org_id": "o1"}
@@ -25,6 +26,8 @@ def test_invoke_and_stream(client, monkeypatch):
 
     monkeypatch.setattr(deps, "require_team", fake_require_team)
     monkeypatch.setattr(deps, "require_auth", fake_require_auth)
+    monkeypatch.setattr(stack_auth, "verify_stack_access_token", lambda t: {"id": "u1", "selectedTeamId": "o1"})
+    monkeypatch.setattr(stack_auth, "verify_team_membership", lambda team, tok: {"id": team})
 
     # Create agent row directly via endpoint
     r = client.post(

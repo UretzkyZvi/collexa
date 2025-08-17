@@ -1,12 +1,21 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthFetch } from "~/lib/authFetch";
 import { useRouter } from "next/navigation";
+import { CodeBlock } from "~/components/CodeBlock";
+
+type Instruction = { id: string; label: string; language: string; code: string };
+
+function copy(text: string) {
+  try {
+    void navigator.clipboard.writeText(text);
+  } catch {}
+}
 
 export default function InstructionsPage({ params }: { params: { id: string } }) {
   const authFetch = useAuthFetch();
   const router = useRouter();
-  const [data, setData] = useState<any | null>(null);
+  const [data, setData] = useState<{ agent_id: string; instructions: Instruction[] } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -19,10 +28,23 @@ export default function InstructionsPage({ params }: { params: { id: string } })
     })();
   }, [params.id]);
 
+  const host = useMemo(() => (typeof window !== "undefined" ? window.location.host : "<host>"), []);
+
   return (
     <main className="mx-auto max-w-3xl p-6">
-      <h1 className="mb-4 text-2xl font-bold">Instructions Pack</h1>
-      <pre className="overflow-auto rounded bg-black/40 p-4 text-sm">{JSON.stringify(data, null, 2)}</pre>
+      <h1 className="mb-2 text-2xl font-bold">Instructions Pack</h1>
+      <p className="mb-6 text-sm text-muted-foreground">Host inferred as {host}. Replace placeholders as needed.</p>
+      <div className="space-y-4">
+        {data?.instructions?.map((ins) => (
+          <section key={ins.id} className="rounded border bg-card p-4">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-sm font-semibold">{ins.label}</h2>
+              <button className="text-xs underline" onClick={() => copy(ins.code.replaceAll("<host>", host).replaceAll("<agent-id>", params.id))}>Copy</button>
+            </div>
+            <CodeBlock language={ins.language} code={ins.code} />
+          </section>
+        ))}
+      </div>
     </main>
   );
 }

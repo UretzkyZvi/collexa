@@ -42,7 +42,8 @@ describe("PlaygroundPage", () => {
     });
 
     expect(postMock).toHaveBeenCalled();
-    const [url, init] = postMock.mock.calls[0];
+    const firstCall = postMock.mock.calls[0] as unknown as [any, any];
+    const [url, init] = firstCall;
     expect(String(url)).toMatch(/\/v1\/agents\/agent-123\/invoke/);
     expect(init.method).toBe("POST");
 

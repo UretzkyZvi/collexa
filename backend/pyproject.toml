@@ -1,0 +1,6 @@
+[tool.ruff]
+# Let Black handle line length; disable E501 in Ruff to reduce noise
+ignore = ["E501"]
+# Keep Ruff targeted to Python 3.11 as per repo config
+target-version = "py311"
+

@@ -16,10 +16,11 @@ export function useRunLiveStream(runId: string | null) {
     let cancelled = false;
     (async () => {
       try {
-        const { accessToken } = user ? await user.getAuthJson() : { accessToken: "" };
-        const teamId = user?.selectedTeam?.id ?? "";
+        const { accessToken } = user ? await user.getAuthJson() : { accessToken: "" } as { accessToken: string };
+        const token = accessToken ?? "";
+        const teamId: string = (user?.selectedTeam?.id as string | undefined) ?? "";
         const base = process.env.NEXT_PUBLIC_API_BASE_URL;
-        const url = `${base}/v1/runs/${runId}/stream?token=${encodeURIComponent(accessToken)}&team=${encodeURIComponent(teamId)}`;
+        const url = `${base}/v1/runs/${String(runId)}/stream?token=${encodeURIComponent(token)}&team=${encodeURIComponent(teamId)}`;
         const es = new EventSource(url);
         es.onopen = () => !cancelled && setConnected(true);
         es.onmessage = (e) => {

@@ -22,14 +22,18 @@ if not p.path or p.path == "/":
 dbname = p.path.lstrip("/")
 # Build admin URL pointing to 'postgres' database, preserving query
 admin_path = "/postgres"
-admin_url = up.urlunparse((p.scheme, p.netloc, admin_path, p.params, p.query, p.fragment))
+admin_url = up.urlunparse(
+    (p.scheme, p.netloc, admin_path, p.params, p.query, p.fragment)
+)
 
 try:
     conn = psycopg2.connect(admin_url)
     conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
 except Exception as e:
     print(f"Failed to connect to admin DB 'postgres': {e}")
-    print("You may need to ensure the 'postgres' database exists or provide an admin DB.")
+    print(
+        "You may need to ensure the 'postgres' database exists or provide an admin DB."
+    )
     sys.exit(1)
 
 try:
@@ -39,11 +43,10 @@ try:
     if exists:
         print(f"Database '{dbname}' already exists — skipping creation.")
     else:
-        cur.execute(f"CREATE DATABASE \"{dbname}\"")
+        cur.execute(f'CREATE DATABASE "{dbname}"')
         print(f"Database '{dbname}' created.")
     cur.close()
     conn.close()
 except Exception as e:
     print(f"Failed to check/create database '{dbname}': {e}")
     sys.exit(1)
-

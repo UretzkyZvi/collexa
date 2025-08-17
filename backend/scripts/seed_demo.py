@@ -1,7 +1,6 @@
 import os
 import uuid
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -44,4 +43,3 @@ with engine.begin() as conn:
 
 print("Seeded demo data:")
 print({"org_id": org_id, "user_id": user_id, "agent_id": agent_id})
-

@@ -10,7 +10,10 @@ STACK_SECRET_SERVER_KEY = os.getenv("STACK_SECRET_SERVER_KEY", "")
 
 def verify_stack_access_token(access_token: str) -> Dict[str, Any]:
     if not STACK_PROJECT_ID or not STACK_SECRET_SERVER_KEY:
-        raise HTTPException(status_code=500, detail="Stack Auth is not configured (missing project/server key)")
+        raise HTTPException(
+            status_code=500,
+            detail="Stack Auth is not configured (missing project/server key)",
+        )
 
     url = f"{STACK_API_BASE}/users/me"
     headers = {

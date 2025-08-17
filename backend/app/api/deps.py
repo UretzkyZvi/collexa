@@ -1,9 +1,11 @@
 from fastapi import Depends, HTTPException, Header, Request
 from typing import Optional, Dict, Any
+
 # Import module to simplify monkeypatching in tests
 from app.security import stack_auth
 from app.db.session import get_db, set_rls_for_session
 from sqlalchemy.orm import Session
+
 
 async def require_auth(
     request: Request,
@@ -34,13 +36,24 @@ async def require_auth(
         org_id = x_team_id
 
     if not org_id:
-        org_id = profile.get("selectedTeamId") or profile.get("team_id") or profile.get("org_id") or user_id
+        org_id = (
+            profile.get("selectedTeamId")
+            or profile.get("team_id")
+            or profile.get("org_id")
+            or user_id
+        )
 
     set_rls_for_session(db, org_id)
 
-    ctx = {"user_id": user_id, "org_id": org_id, "profile": profile, "access_token": token}
+    ctx = {
+        "user_id": user_id,
+        "org_id": org_id,
+        "profile": profile,
+        "access_token": token,
+    }
     request.state.auth = ctx
     return ctx
+
 
 async def require_team(
     request: Request,
@@ -58,7 +71,9 @@ async def require_team(
     ctx = getattr(request.state, "auth", None)
     if ctx and ctx.get("access_token"):
         # Ensure membership for the requested team and override org_id
-        stack_auth.verify_team_membership(x_team_id, ctx["access_token"])  # may raise 403
+        stack_auth.verify_team_membership(
+            x_team_id, ctx["access_token"]
+        )  # may raise 403
         ctx = {**ctx, "org_id": x_team_id}
         request.state.auth = ctx
         set_rls_for_session(db, x_team_id)
@@ -76,7 +91,11 @@ async def require_team(
     stack_auth.verify_team_membership(x_team_id, token)  # may raise 403
     set_rls_for_session(db, x_team_id)
 
-    ctx = {"user_id": user_id, "org_id": x_team_id, "profile": profile, "access_token": token}
+    ctx = {
+        "user_id": user_id,
+        "org_id": x_team_id,
+        "profile": profile,
+        "access_token": token,
+    }
     request.state.auth = ctx
     return ctx
-

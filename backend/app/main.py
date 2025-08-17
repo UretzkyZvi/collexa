@@ -21,13 +21,14 @@ app.add_middleware(
 # Coarse auth middleware for /v1/*
 app.add_middleware(AuthMiddleware)
 
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
 
 # Mount routers (v1)
 app.include_router(agents_router, prefix="/v1")
 app.include_router(billing_router, prefix="/v1")
 app.include_router(runs_router, prefix="/v1")
 app.include_router(mcp_router)
-

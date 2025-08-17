@@ -5,8 +5,10 @@ import os
 
 DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///./dev.db"
 
+
 class Base(DeclarativeBase):
     pass
+
 
 # Create engine with sane defaults for sqlite (esp. in-memory for tests)
 if DATABASE_URL.startswith("sqlite"):
@@ -28,12 +30,14 @@ else:
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
+
 
 def set_rls_for_session(db, org_id: str | None):
     """Optional: set a local session variable for Postgres RLS policies.

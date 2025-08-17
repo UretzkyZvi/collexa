@@ -1,0 +1,91 @@
+%% Mermaid Architecture Diagram: Builder → FastAPI → Adapters → Learning
+%% Save as .mmd and view with Mermaid-compatible viewer
+
+flowchart LR
+  subgraph UI[Next.js PoC UI]
+    UA[Describe Agent]
+    UP[Playground / Invoke]
+    UL[Logs]
+    UIp[Instructions Pack]
+  end
+
+  subgraph API[Python FastAPI Service]
+    FE[/REST: /v1/agents, /invoke, /instructions/]
+    A2A[/.well-known/a2a/{agent}.json]
+    WS[[SSE/WebSocket Streams]]
+  end
+
+  subgraph AuthBilling[Auth & Billing]
+    AUTH[AuthN/AuthZ\nJWT (org_id), API Keys, RLS]
+    BILL[Billing (Stripe)\nMeters & Webhooks]
+  end
+
+  subgraph Builder[Agent Builder]
+    BRQ[Brief Parser]
+    SEL[Capability/Tool Selector]
+    MOD[Model & Memory Planner]
+    PRM[Prompt/Planner Generator]
+    EVAL[Quick Evals / Canaries]
+    DESC[(Agent Descriptor / Blueprint)]
+  end
+
+  subgraph Adapters[Protocol Adapters]
+    MCP[[MCP Server\n(tool advertisement)]]
+    A2AD[[A2A Capability Descriptor\n(signed JSON)]]
+    REST[[OpenAPI / REST]]
+  end
+
+  subgraph Runtime[Agent Runtime]
+    ORCH[Orchestration/Queue\n(Temporal/Prefect/Workers)]
+    EXEC[Execution Sandbox\n(tools, policies)]
+  end
+
+  subgraph Learning[Adaptive Learning]
+    WARM[Warm-Start Selector]
+    SUM[Summarization]
+    TUNE[Skill/LoRA Tuning]
+    EVAL2[Regressions & Gates]
+  end
+
+  subgraph Data[Data & Storage]
+    PG[(Postgres\nAccounts/Agents/Policies)]
+    VEC[(Vector DB\nEmbeddings/Memory)]
+    OBJ[(Object Store\nArtifacts/Reports)]
+    LOGS[(Observability\nLogs/Traces/Metrics)]
+  end
+
+  %% Flows
+  UA -->|Create brief| FE
+  UP -->|Invoke capability| FE
+  UL -->|Fetch| FE
+  UIp -->|Fetch Instructions| FE
+
+  FE -->|Create Agent| BRQ
+  BRQ --> SEL --> MOD --> PRM --> EVAL --> DESC
+  DESC -->|Emit endpoints| Adapters
+
+  FE --> MCP
+  FE --> REST
+  A2A <-->|Serve descriptor| A2AD
+
+  FE --> ORCH
+  ORCH --> EXEC
+  EXEC --> WS
+  WS --> UP
+
+  %% Learning loop
+  ORCH -->|Run data| Learning
+  Learning -->|Updates| DESC
+  TUNE -->|Model/Adapter versions| OBJ
+
+  %% Data access
+  API --> AUTH
+  API --> BILL
+  FE --> PG
+  FE --> VEC
+  FE --> OBJ
+  FE --> LOGS
+
+  classDef group fill:#0b1220,stroke:#334155,color:#e2e8f0;
+  class UI,API,Adapters,Runtime,Learning,Data,AuthBilling,Builder group;
+

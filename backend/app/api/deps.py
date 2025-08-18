@@ -62,23 +62,32 @@ async def require_team(
     x_team_id: Optional[str] = Header(None),
     db: Session = Depends(get_db),
 ) -> Dict[str, Any]:
-    """Stricter auth for sensitive endpoints: requires explicit X-Team-Id.
-    Verifies team membership and scopes org_id to that team.
+    """Stricter auth for sensitive endpoints: requires explicit X-Team-Id for Bearer tokens.
+    API keys already have org scoping built-in.
     """
-    if not x_team_id:
-        raise HTTPException(status_code=400, detail="X-Team-Id header is required")
-
     # Reuse existing auth context if present
     ctx = getattr(request.state, "auth", None)
-    if ctx and ctx.get("access_token"):
-        # Ensure membership for the requested team and override org_id
-        stack_auth.verify_team_membership(
-            x_team_id, ctx["access_token"]
-        )  # may raise 403
-        ctx = {**ctx, "org_id": x_team_id}
-        request.state.auth = ctx
-        set_rls_for_session(db, x_team_id)
-        return ctx
+    if ctx:
+        # API key auth: already has org_id, no team verification needed
+        if ctx.get("profile", {}).get("auth") == "api_key":
+            set_rls_for_session(db, ctx["org_id"])
+            return ctx
+
+        # Bearer token auth: verify team membership
+        if ctx.get("access_token"):
+            if not x_team_id:
+                raise HTTPException(status_code=400, detail="X-Team-Id header is required")
+            stack_auth.verify_team_membership(
+                x_team_id, ctx["access_token"]
+            )  # may raise 403
+            ctx = {**ctx, "org_id": x_team_id}
+            request.state.auth = ctx
+            set_rls_for_session(db, x_team_id)
+            return ctx
+
+    # For new Bearer token auth, require X-Team-Id
+    if not x_team_id:
+        raise HTTPException(status_code=400, detail="X-Team-Id header is required")
 
     # Fallback to verifying token from header
     if not authorization or not authorization.lower().startswith("bearer "):

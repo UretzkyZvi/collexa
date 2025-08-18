@@ -53,3 +53,30 @@ class Log(Base):
     level = Column(String(16), nullable=False, default="info")
     message = Column(Text, nullable=False)
     ts = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AgentKey(Base):
+    __tablename__ = "agent_keys"
+    id = Column(String(64), primary_key=True)
+    org_id = Column(String(64), nullable=False)
+    agent_id = Column(String(64), nullable=False)
+    name = Column(String(255))  # optional label
+    key_hash = Column(String(128), nullable=False)
+    created_by = Column(String(64))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    revoked_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    org_id = Column(String(64), nullable=False)
+    actor_id = Column(String(64))  # user_id or "api_key" for API key auth
+    endpoint = Column(String(255), nullable=False)  # e.g., "POST /v1/agents/{id}/invoke"
+    agent_id = Column(String(64))  # if applicable
+    capability = Column(String(255))  # if applicable (from invoke payload)
+    status_code = Column(Integer, nullable=False)
+    request_id = Column(String(64))  # for correlation
+    ip_address = Column(String(45))  # IPv4/IPv6
+    user_agent = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -47,7 +47,11 @@ def test_debug_me_returns_auth_context(client, monkeypatch):
         assert token == "valid-token"
         return {"id": "user_1", "selectedTeamId": "team_1"}
 
+    def ok_team_verify(team_id: str, token: str):
+        return {"id": team_id}
+
     monkeypatch.setattr(stack_auth, "verify_stack_access_token", ok_verify)
+    monkeypatch.setattr(stack_auth, "verify_team_membership", ok_team_verify)
 
     r = client.get(
         "/v1/debug/me",
@@ -63,9 +67,7 @@ def test_debug_me_returns_auth_context(client, monkeypatch):
         "/v1/debug/me",
         headers={"Authorization": "Bearer valid-token", "X-Team-Id": "team_1"},
     )
-    # Middleware also verifies membership; our fake verify_token doesn't set server headers here,
-    # so depending on handler path this may surface as 403. Accept either 200 or 403.
-    assert r2.status_code in (200, 403)
+    assert r2.status_code == 200
     body2 = r2.json()
     assert body2.get("org_id") == "team_1"
 

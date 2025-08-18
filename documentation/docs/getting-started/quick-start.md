@@ -28,7 +28,7 @@ docker-compose up -d
 2. Sign up for a new account
 3. Create your first organization when prompted
 
-![Dashboard Screenshot](../assets/dashboard-welcome.png)
+<!-- Dashboard Screenshot: Coming soon -->
 
 ## 3. Create Your First Agent
 
@@ -40,7 +40,7 @@ docker-compose up -d
 3. Click **"Create Agent"**
 4. Your agent is now ready! 🎉
 
-![Agent Creation](../assets/agent-creation.png)
+<!-- Agent Creation Screenshot: Coming soon -->
 
 ## 4. Test Your Agent
 
@@ -86,7 +86,7 @@ curl -X POST http://localhost:8000/v1/agents/{AGENT_ID}/invoke \
    - Response latency (p50, p95, p99)
    - Agent invocation statistics
 
-![Metrics Dashboard](../assets/metrics-dashboard.png)
+<!-- Metrics Dashboard Screenshot: Coming soon -->
 
 ## 6. Integration Ready!
 

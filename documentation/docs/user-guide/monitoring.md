@@ -62,9 +62,9 @@ curl -X GET http://localhost:8000/v1/metrics \
 - Agent management operations
 
 **Success Rate**: Calculated as `(Total - Errors) / Total`
-- **Excellent**: >99%
+- **Excellent**: Greater than 99%
 - **Good**: 95-99%
-- **Needs Attention**: <95%
+- **Needs Attention**: Less than 95%
 
 **Error Count**: Failed requests (4xx and 5xx status codes)
 - Authentication failures
@@ -92,18 +92,18 @@ curl -X GET http://localhost:8000/v1/metrics \
 - **Success Rate**: Percentage of successful invocations
 
 **Performance Benchmarks:**
-- **Fast**: <1 second average
+- **Fast**: Less than 1 second average
 - **Good**: 1-3 seconds average
 - **Acceptable**: 3-5 seconds average
-- **Slow**: >5 seconds average
+- **Slow**: Greater than 5 seconds average
 
 ## Performance Analysis
 
 ### Identifying Issues
 
 **High Latency Indicators:**
-- P95 > 2x P50 (inconsistent performance)
-- P99 > 5x P50 (significant outliers)
+- P95 greater than 2x P50 (inconsistent performance)
+- P99 greater than 5x P50 (significant outliers)
 - Increasing trend over time
 
 **Error Pattern Analysis:**

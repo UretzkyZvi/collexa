@@ -104,7 +104,7 @@ pnpm dev  # or npm run dev
 
 ### Option 3: Production Deployment
 
-See the [Deployment Guide](../deployment/overview.md) for production setup instructions.
+Production deployment guide coming soon.
 
 ## Environment Configuration
 

@@ -16,15 +16,15 @@ Collexa provides seamless integration with popular automation tools and custom a
 
 | Framework | Complexity | Use Case | Documentation |
 |-----------|------------|----------|---------------|
-| **LangChain** | Medium | AI application development | [LangChain Guide](./langchain.md) |
-| **OpenAI** | Easy | Compatible API endpoints | [OpenAI Guide](./openai.md) |
-| **Custom APIs** | Variable | Direct REST integration | [Custom API Guide](./custom-api.md) |
+| **LangChain** | Medium | AI application development | Coming soon |
+| **OpenAI** | Easy | Compatible API endpoints | Coming soon |
+| **Custom APIs** | Variable | Direct REST integration | Coming soon |
 
 ### Protocol Support
 
 | Protocol | Purpose | Use Case | Documentation |
 |----------|---------|----------|---------------|
-| **MCP** | AI tool connectivity | Agent-to-agent communication | [MCP Guide](./mcp-clients.md) |
+| **MCP** | AI tool connectivity | Agent-to-agent communication | Coming soon |
 | **REST API** | Direct integration | Custom applications | [API Reference](../api/overview.md) |
 | **WebSockets** | Real-time communication | Live updates and streaming | [API Reference](../api/overview.md) |
 
@@ -201,8 +201,8 @@ curl -X POST http://localhost:8000/v1/agents/YOUR_AGENT_ID/invoke \
 Follow the specific guide for your chosen tool:
 - **[n8n Integration](./n8n.md)** - Visual workflow builder
 - **[Make.com Integration](./make-com.md)** - No-code automation
-- **[LangChain Integration](./langchain.md)** - Python AI framework
-- **[Custom API Integration](./custom-api.md)** - Direct REST API
+- **LangChain Integration** - Python AI framework (coming soon)
+- **Custom API Integration** - Direct REST API (coming soon)
 
 ## Best Practices
 
@@ -271,5 +271,5 @@ Follow the specific guide for your chosen tool:
 **Next**: Choose your integration:
 - **[n8n Integration →](./n8n.md)**
 - **[Make.com Integration →](./make-com.md)**
-- **[LangChain Integration →](./langchain.md)**
-- **[Custom API Integration →](./custom-api.md)**
+- **LangChain Integration** (coming soon)
+- **Custom API Integration** (coming soon)

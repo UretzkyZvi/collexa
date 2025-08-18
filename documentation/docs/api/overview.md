@@ -369,8 +369,9 @@ def make_request_with_retry(url, headers, data, max_retries=3):
 
 ---
 
-**Next**: Explore specific API endpoints:
-- **[Authentication →](./authentication.md)**
-- **[Agents API →](./agents.md)**
-- **[Invocations API →](./invocations.md)**
-- **[Logs API →](./logs.md)**
+**Next**: Explore the platform:
+- **[Getting Started →](../getting-started/introduction.md)**
+- **[User Guide →](../user-guide/dashboard.md)**
+- **[Integration Guides →](../integrations/overview.md)**
+
+**Coming Soon**: Detailed API endpoint documentation

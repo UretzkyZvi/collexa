@@ -31,7 +31,7 @@ The dashboard provides real-time insights into your platform usage and performan
 ### 3. Success Rate
 - **Formula**: `(Total Calls - Errors) / Total Calls * 100`
 - **Display**: Percentage with one decimal place
-- **Color Coding**: Green for >95%, yellow for 90-95%, red for <90%
+- **Color Coding**: Green for greater than 95%, yellow for 90-95%, red for less than 90%
 
 ## Performance Metrics Section
 

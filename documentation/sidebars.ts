@@ -36,40 +36,42 @@ const sidebars: SidebarsConfig = {
     'integrations/overview',
     'integrations/n8n',
     'integrations/make-com',
-    'integrations/langchain',
-    'integrations/openai',
-    'integrations/mcp-clients',
-    'integrations/custom-api',
+    // Coming soon:
+    // 'integrations/langchain',
+    // 'integrations/openai',
+    // 'integrations/mcp-clients',
+    // 'integrations/custom-api',
   ],
 
   // API Reference sidebar
   apiSidebar: [
     'api/overview',
-    'api/authentication',
-    'api/agents',
-    'api/invocations',
-    'api/logs',
-    'api/metrics',
-    'api/webhooks',
-    'api/errors',
+    // Coming soon:
+    // 'api/authentication',
+    // 'api/agents',
+    // 'api/invocations',
+    // 'api/logs',
+    // 'api/metrics',
+    // 'api/webhooks',
+    // 'api/errors',
   ],
 
-  // Architecture sidebar
-  architectureSidebar: [
-    'architecture/overview',
-    'architecture/security',
-    'architecture/database',
-    'architecture/observability',
-  ],
+  // Architecture sidebar (coming soon)
+  // architectureSidebar: [
+  //   'architecture/overview',
+  //   'architecture/security',
+  //   'architecture/database',
+  //   'architecture/observability',
+  // ],
 
-  // Deployment sidebar
-  deploymentSidebar: [
-    'deployment/overview',
-    'deployment/docker',
-    'deployment/environment',
-    'deployment/production',
-    'deployment/monitoring',
-  ],
+  // Deployment sidebar (coming soon)
+  // deploymentSidebar: [
+  //   'deployment/overview',
+  //   'deployment/docker',
+  //   'deployment/environment',
+  //   'deployment/production',
+  //   'deployment/monitoring',
+  // ],
 };
 
 export default sidebars;

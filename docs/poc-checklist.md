@@ -166,7 +166,7 @@ Acceptance Test
 - [x] Stricter endpoints: X-Team-Id mandatory for create/invoke; membership verified
 - [x] Tenant isolation: Postgres Row-Level Security (RLS) policies + SET LOCAL app.org_id middleware + cross-org tests
 - [x] API Keys: per-agent, hashed at rest, scoped to capabilities (POST/DELETE /v1/agents/{id}/keys; X-API-Key auth)
-- [ ] Audit logs: actor_id, org_id, endpoint, agent_id, capability, result status
+- [x] Audit logs: actor_id, org_id, endpoint, agent_id, capability, result status (AuditMiddleware + GET /v1/audit/logs)
 
 Acceptance Test
 - [x] Signed-in user can POST /v1/agents; unsigned user gets 401
@@ -222,6 +222,7 @@ Optional (in parallel): Protocols
 
 - [ ] Basic Settings page scaffold
 - [x] API Keys: create/list/revoke; hashed storage — DONE (feat/api-keys branch)
+- [x] Audit logs: track all API calls with actor/org/endpoint/status — DONE (AuditMiddleware)
 - [ ] Stripe integration: customer on signup + checkout flow + webhook (moved to Phase 2)
 - [ ] Observability: request_id + basic metrics
 - [ ] An MCP client connects and sees the advertised tools; A2A descriptor validates

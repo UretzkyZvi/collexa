@@ -21,7 +21,7 @@ Acceptance Test
 ## Database & Schema (Postgres) — Phase 1 scope
 
 Schema overview
-- orgs: organizations/tenants (id, name, stripe_customer_id)
+- orgs: organizations/tenants (id, name, stripe_customer_id*)
 - users: end users (id, email, name)
 - org_members: user membership and role in an org (org_id, user_id, role)
 - agents: agent records (id, org_id, display_name, descriptor_json, status)
@@ -29,14 +29,16 @@ Schema overview
 - agent_keys: per‑agent API keys (id, agent_id, key_hash, scopes, created_at, revoked_at)
 - runs: invocations (id, agent_id, org_id, capability, input_json, output_json, status, started_at, finished_at, cost_tokens, cost_cents)
 - logs: structured log lines for runs (id, run_id, ts, level, message, data_json)
-- billing_events: metering/billing events (id, org_id, type, amount_cents, meta_json, ts)
+- billing_events: metering/billing events (id, org_id, type, amount_cents, meta_json, ts)*
+
+*Phase 2 items (deferred from PoC)
 
 Representative DDL (abridged)
 ```sql
 create table orgs (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  stripe_customer_id text,
+  stripe_customer_id text, -- Phase 2
   created_at timestamptz not null default now()
 );
 
@@ -151,7 +153,7 @@ Acceptance Test
 Acceptance Test
 - [x] See logs streaming in UI and final JSON result rendered
 
-## Milestone E — Baseline Security and Billing
+## Milestone E — Baseline Security
 
 - [x] AuthN: Stack Auth integrated; sign-in via /handler/sign-in; UserButton shown
 - [x] Protected API with REST token verification (Stack /users/me) in FastAPI
@@ -164,7 +166,6 @@ Acceptance Test
 - [x] Stricter endpoints: X-Team-Id mandatory for create/invoke; membership verified
 - [x] Tenant isolation: Postgres Row-Level Security (RLS) policies + SET LOCAL app.org_id middleware + cross-org tests
 - [x] API Keys: per-agent, hashed at rest, scoped to capabilities (POST/DELETE /v1/agents/{id}/keys; X-API-Key auth)
-- [ ] Billing: Create Stripe customer on signup; POST /v1/billing/checkout; webhook receiver
 - [ ] Audit logs: actor_id, org_id, endpoint, agent_id, capability, result status
 
 Acceptance Test
@@ -221,7 +222,7 @@ Optional (in parallel): Protocols
 
 - [ ] Basic Settings page scaffold
 - [x] API Keys: create/list/revoke; hashed storage — DONE (feat/api-keys branch)
-- [ ] Stripe integration: customer on signup + checkout flow + webhook
+- [ ] Stripe integration: customer on signup + checkout flow + webhook (moved to Phase 2)
 - [ ] Observability: request_id + basic metrics
 - [ ] An MCP client connects and sees the advertised tools; A2A descriptor validates
 

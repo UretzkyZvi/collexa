@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Request, Query
+import time
 from starlette.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import Any, Dict, Optional
@@ -9,6 +10,10 @@ from app.api.deps import require_team
 from app.db.session import get_db
 from app.db import models
 from app.streams import queue_for_agent, queue_for_run
+from app.observability.metrics import increment_agent_invocations, record_agent_invocation_duration
+from app.observability.logging import log_agent_invocation, get_structured_logger, set_request_context
+
+logger = get_structured_logger("agents_invoke")
 
 router = APIRouter()
 
@@ -20,11 +25,18 @@ async def invoke_agent(
     auth=Depends(require_team),
     db: Session = Depends(get_db),
 ):
+    start_time = time.time()
+    org_id = auth.get("org_id")
+    capability = payload.get("capability", "unknown")
+
+    # Set observability context (request_id should be set by middleware)
+    # set_request_context(getattr(request.state, "request_id", ""), org_id, agent_id)
+
     run_id = str(uuid.uuid4())
     run = models.Run(
         id=run_id,
         agent_id=agent_id,
-        org_id=auth.get("org_id"),
+        org_id=org_id,
         invoked_by=auth.get("user_id"),
         status="running",
         input=payload,
@@ -65,6 +77,14 @@ async def invoke_agent(
     db.commit()
     await agent_q.put(complete_msg)
     await run_q.put(complete_msg)
+
+    # Record observability metrics
+    duration_ms = (time.time() - start_time) * 1000
+    increment_agent_invocations(agent_id, org_id, capability, "succeeded")
+    record_agent_invocation_duration(agent_id, org_id, duration_ms)
+
+    # Structured logging
+    log_agent_invocation(logger, agent_id, capability, "succeeded", duration_ms, run_id=run_id)
 
     return {
         "agent_id": agent_id,

@@ -8,6 +8,7 @@ from app.api.routers.agents_keys import router as agents_keys_router
 from app.api.routers.billing import router as billing_router
 from app.api.routers.runs import router as runs_router
 from app.api.routers.audit import router as audit_router
+from app.api.routers.metrics import router as metrics_router
 from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.audit_middleware import AuditMiddleware
 from app.mcp import router as mcp_router
@@ -41,4 +42,5 @@ app.include_router(agents_keys_router, prefix="/v1")
 app.include_router(billing_router, prefix="/v1")
 app.include_router(runs_router, prefix="/v1")
 app.include_router(audit_router, prefix="/v1")
+app.include_router(metrics_router, prefix="/v1")
 app.include_router(mcp_router)

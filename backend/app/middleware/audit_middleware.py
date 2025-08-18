@@ -6,6 +6,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import Session
 from app.db.session import SessionLocal
 from app.db import models
+from app.observability.metrics import increment_api_calls, record_request_duration
+from app.observability.logging import set_request_context, log_api_call, get_structured_logger
+
+logger = get_structured_logger("audit_middleware")
 
 
 class AuditMiddleware(BaseHTTPMiddleware):
@@ -29,6 +33,13 @@ class AuditMiddleware(BaseHTTPMiddleware):
 
         start_time = time.time()
 
+        # Extract auth context early for observability
+        auth_ctx = getattr(request.state, "auth", {})
+        org_id = auth_ctx.get("org_id")
+
+        # Set logging context
+        set_request_context(request_id, org_id)
+
         # Get client info
         ip_address = request.client.host if request.client else None
         user_agent = request.headers.get("user-agent")
@@ -50,8 +61,11 @@ class AuditMiddleware(BaseHTTPMiddleware):
 
         # Process request
         response = await call_next(request)
-        
-        # Extract audit info from auth context
+
+        # Calculate duration
+        duration_ms = (time.time() - start_time) * 1000
+
+        # Extract audit info from auth context (refresh in case it changed)
         auth_ctx = getattr(request.state, "auth", {})
         org_id = auth_ctx.get("org_id")
         actor_id = auth_ctx.get("user_id")
@@ -99,7 +113,24 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 # Don't fail the request if audit logging fails
                 pass
         
+        # Record observability metrics
+        if org_id:
+            increment_api_calls(path, request.method, response.status_code, org_id)
+            record_request_duration(path, request.method, duration_ms, org_id)
+
+            # Structured logging
+            log_api_call(
+                logger,
+                request.method,
+                path,
+                response.status_code,
+                duration_ms,
+                actor_id=actor_id,
+                agent_id=agent_id,
+                capability=capability
+            )
+
         # Add request ID to response headers for debugging
         response.headers["X-Request-ID"] = request_id
-        
+
         return response

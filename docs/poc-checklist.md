@@ -193,6 +193,9 @@ Acceptance Test
 - [x] Quick demo: external MCP client lists tools successfully (see docs/mcp-validation.md)
 
 Acceptance Test
+- [x] A2A descriptor can be fetched and signature validates
+- [x] MCP WebSocket client can connect and list tools
+- [x] External tools (n8n/Make) can invoke agent via HTTP with proper auth
 
 ## Current Sprint (PoC acceptance — 1–2 weeks)
 
@@ -224,14 +227,14 @@ Optional (in parallel): Protocols
 - [x] API Keys: create/list/revoke; hashed storage — DONE (feat/api-keys branch)
 - [x] Audit logs: track all API calls with actor/org/endpoint/status — DONE (AuditMiddleware)
 - [ ] Stripe integration: customer on signup + checkout flow + webhook (moved to Phase 2)
-- [ ] Observability: request_id + basic metrics
+- [x] Observability: request_id + basic metrics — DONE (MetricsCollector + structured logging)
 - [ ] An MCP client connects and sees the advertised tools; A2A descriptor validates
 
 ## Milestone G — Observability (Minimal)
 
-- [ ] Structured logs with request_id, org_id, agent_id
-- [ ] Basic metrics (invocations count, latency p50/p95, errors)
-- [ ] Tracing stub (OpenTelemetry collector optional)
+- [x] Structured logs with request_id, org_id, agent_id (StructuredFormatter + context vars)
+- [x] Basic metrics (invocations count, latency p50/p95, errors) (MetricsCollector + GET /v1/metrics)
+- [x] Tracing stub (OpenTelemetry collector optional) (Simple Span implementation)
 
 Acceptance Test
 - [ ] Dashboard or log view shows recent invocations with status/latency

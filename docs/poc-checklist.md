@@ -223,7 +223,7 @@ Optional (in parallel): Protocols
 
 ## Backlog (Shortlist)
 
-- [ ] Basic Settings page scaffold
+- [x] Basic Settings page scaffold — DONE (API key management + UX improvements)
 - [x] API Keys: create/list/revoke; hashed storage — DONE (feat/api-keys branch)
 - [x] Audit logs: track all API calls with actor/org/endpoint/status — DONE (AuditMiddleware)
 - [ ] Stripe integration: customer on signup + checkout flow + webhook (moved to Phase 2)

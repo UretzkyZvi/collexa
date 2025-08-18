@@ -17,9 +17,36 @@ interface DashboardStats {
   }>;
 }
 
+interface MetricsData {
+  org_id: string;
+  api_calls: {
+    total: number;
+    errors: number;
+    success_rate: number;
+  };
+  request_duration_ms: {
+    count: number;
+    p50: number;
+    p95: number;
+    p99: number;
+    avg: number;
+  };
+  agent_invocations: {
+    total: number;
+    duration_ms: {
+      count: number;
+      p50: number;
+      p95: number;
+      p99: number;
+      avg: number;
+    };
+  };
+}
+
 export default function HomePage() {
   const authFetch = useAuthFetch();
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [metrics, setMetrics] = useState<MetricsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,12 +61,17 @@ export default function HomePage() {
       const agentsRes = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents`);
       const agents = agentsRes.ok ? await agentsRes.json() : [];
 
-      // For now, create mock stats since we don't have a dashboard endpoint yet
+      // Load metrics data
+      const metricsRes = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/metrics`);
+      const metricsData = metricsRes.ok ? await metricsRes.json() : null;
+
       setStats({
         agents_count: agents.length,
-        api_calls_today: Math.floor(Math.random() * 100), // Mock data
+        api_calls_today: metricsData?.api_calls?.total || 0,
         recent_invocations: [], // Would come from actual API
       });
+
+      setMetrics(metricsData);
     } catch (error) {
       console.error("Failed to load dashboard data:", error);
     } finally {
@@ -112,7 +144,7 @@ export default function HomePage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">API Calls Today</CardTitle>
+            <CardTitle className="text-sm font-medium">API Calls Total</CardTitle>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -127,9 +159,9 @@ export default function HomePage() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.api_calls_today || 0}</div>
+            <div className="text-2xl font-bold">{metrics?.api_calls?.total || 0}</div>
             <p className="text-xs text-muted-foreground">
-              Invocations and requests
+              {metrics?.api_calls?.errors || 0} errors
             </p>
           </CardContent>
         </Card>
@@ -151,9 +183,14 @@ export default function HomePage() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">99.2%</div>
+            <div className="text-2xl font-bold">
+              {metrics?.api_calls?.success_rate
+                ? `${(metrics.api_calls.success_rate * 100).toFixed(1)}%`
+                : "100%"
+              }
+            </div>
             <p className="text-xs text-muted-foreground">
-              Last 24 hours
+              API call success rate
             </p>
           </CardContent>
         </Card>
@@ -196,6 +233,85 @@ export default function HomePage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Performance Metrics */}
+      {metrics && metrics.api_calls.total > 0 && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Request Performance</CardTitle>
+              <CardDescription>API response times</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Average:</span>
+                  <span className="text-sm font-medium">
+                    {metrics.request_duration_ms.avg.toFixed(1)}ms
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">P50:</span>
+                  <span className="text-sm font-medium">
+                    {metrics.request_duration_ms.p50.toFixed(1)}ms
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">P95:</span>
+                  <span className="text-sm font-medium">
+                    {metrics.request_duration_ms.p95.toFixed(1)}ms
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">P99:</span>
+                  <span className="text-sm font-medium">
+                    {metrics.request_duration_ms.p99.toFixed(1)}ms
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Total Requests:</span>
+                  <span className="text-sm font-medium">
+                    {metrics.request_duration_ms.count}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Agent Invocations</CardTitle>
+              <CardDescription>Agent execution performance</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Total Invocations:</span>
+                  <span className="text-sm font-medium">
+                    {metrics.agent_invocations.total}
+                  </span>
+                </div>
+                {metrics.agent_invocations.duration_ms.count > 0 && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Avg Duration:</span>
+                      <span className="text-sm font-medium">
+                        {metrics.agent_invocations.duration_ms.avg.toFixed(1)}ms
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">P95 Duration:</span>
+                      <span className="text-sm font-medium">
+                        {metrics.agent_invocations.duration_ms.p95.toFixed(1)}ms
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Getting Started */}
       {stats?.agents_count === 0 && (

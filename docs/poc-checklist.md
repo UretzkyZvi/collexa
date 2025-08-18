@@ -237,7 +237,7 @@ Optional (in parallel): Protocols
 - [x] Tracing stub (OpenTelemetry collector optional) (Simple Span implementation)
 
 Acceptance Test
-- [ ] Dashboard or log view shows recent invocations with status/latency
+- [x] Dashboard or log view shows recent invocations with status/latency (Dashboard shows metrics, performance stats)
 
 Notes
 - Keep Phase 1 minimal but production-safe. Defer enterprise features (SSO, OPA policies) to Phase 2.

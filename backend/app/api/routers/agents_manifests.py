@@ -30,7 +30,6 @@ def _load_jwks() -> Dict[str, Any]:
 @router.post("/agents/{agent_id}/manifests")
 async def create_agent_manifest(
     agent_id: str,
-    payload: Dict[str, Any] | None = None,
     auth=Depends(require_team),
     db: Session = Depends(get_db),
 ):
@@ -98,3 +97,50 @@ async def get_jwks():
         return {"keys": []}
     return jwks
 
+
+
+@router.post("/agents/{agent_id}/manifests/verify")
+async def verify_agent_manifest(
+    agent_id: str,
+    payload: Dict[str, Any],
+):
+    """Verify a signed manifest token using current JWKS.
+
+    Body: {"signature": "<jws>", "expect": {optional fields to compare}}
+    """
+    token = payload.get("signature")
+    if not token:
+        raise HTTPException(status_code=400, detail="signature is required")
+
+    jwks = _load_jwks()
+    keys = jwks.get("keys", []) if isinstance(jwks, dict) else []
+    if not keys:
+        raise HTTPException(status_code=503, detail="No verifier keys available")
+
+    # Attempt verification against any key in the JWKS
+    last_err = None
+    for k in keys:
+        try:
+            # Reconstruct PEM from JWK and verify
+            from app.security.jwks import ec_p256_jwk_to_public_pem
+            from jose import jws as _jws
+            from jose.constants import ALGORITHMS as _ALG
+
+            pem = ec_p256_jwk_to_public_pem(k)
+            if not pem:
+                continue
+            payload_json = _jws.verify(token, pem, algorithms=[_ALG.ES256])
+            # Optionally validate expected fields
+            exp = payload.get("expect") or {}
+            if exp:
+                import json as _json
+                data = _json.loads(payload_json)
+                for field, value in exp.items():
+                    if data.get(field) != value:
+                        raise HTTPException(status_code=400, detail=f"Mismatch on field '{field}'")
+            return {"valid": True}
+        except Exception as e:  # try next key
+            last_err = str(e)
+            continue
+
+    raise HTTPException(status_code=400, detail=f"Invalid signature: {last_err}")

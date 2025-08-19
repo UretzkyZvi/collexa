@@ -2,15 +2,17 @@ import os
 import pytest
 
 pytestmark = pytest.mark.skipif(
-    os.getenv("DATABASE_URL", "").startswith("sqlite"),
-    reason="Skip migration-dependent test on sqlite dev DB; run in CI with Postgres",
+    not os.getenv("DATABASE_URL") or os.getenv("DATABASE_URL", "").startswith("sqlite"),
+    reason="Skip: requires DATABASE_URL (Postgres) in CI",
 )
 
 from sqlalchemy import create_engine, inspect
 
 
 def test_a2a_manifests_table_exists():
-    engine = create_engine(os.environ["DATABASE_URL"])  # provided in CI
+    db_url = os.getenv("DATABASE_URL")
+    assert db_url, "DATABASE_URL must be set in CI for migration tests"
+    engine = create_engine(db_url)
     inspector = inspect(engine)
     tables = inspector.get_table_names()
     assert "a2a_manifests" in tables

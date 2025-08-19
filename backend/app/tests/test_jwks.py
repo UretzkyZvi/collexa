@@ -1,7 +1,13 @@
 import os
+import os
+import sys
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
 import pytest
 
-pytestmark = pytest.mark.skip(reason="cryptography not installed in this local runner; covered in CI")
+pytest.importorskip("cryptography")
 
 from app.security.jwks import derive_ec_p256_jwk_from_pem, derive_jwks_from_env
 

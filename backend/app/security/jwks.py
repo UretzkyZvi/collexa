@@ -1,13 +1,6 @@
 import base64
 from typing import Optional, Dict, Any
 
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.serialization import (
-    load_pem_public_key,
-    load_pem_private_key,
-)
-
 
 def _b64url_nopad(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode("ascii").rstrip("=")
@@ -24,20 +17,26 @@ def derive_ec_p256_jwk_from_pem(
 
     if private_pem:
         try:
-            priv = load_pem_private_key(private_pem.encode("utf-8"), password=None)
-            if not isinstance(priv, ec.EllipticCurvePrivateKey):
+            from cryptography.hazmat.primitives.asymmetric import ec as _ec
+            from cryptography.hazmat.primitives.serialization import load_pem_private_key as _load_priv
+
+            priv = _load_priv(private_pem.encode("utf-8"), password=None)
+            if not isinstance(priv, _ec.EllipticCurvePrivateKey):
                 return None
-            if not isinstance(priv.curve, ec.SECP256R1):
+            if not isinstance(priv.curve, _ec.SECP256R1):
                 return None
             pub_key = priv.public_key()
         except Exception:
             return None
     elif public_pem:
         try:
-            pub = load_pem_public_key(public_pem.encode("utf-8"))
-            if not isinstance(pub, ec.EllipticCurvePublicKey):
+            from cryptography.hazmat.primitives.asymmetric import ec as _ec
+            from cryptography.hazmat.primitives.serialization import load_pem_public_key as _load_pub
+
+            pub = _load_pub(public_pem.encode("utf-8"))
+            if not isinstance(pub, _ec.EllipticCurvePublicKey):
                 return None
-            if not isinstance(pub.curve, ec.SECP256R1):
+            if not isinstance(pub.curve, _ec.SECP256R1):
                 return None
             pub_key = pub
         except Exception:
@@ -89,4 +88,25 @@ def derive_jwks_from_env(env: Dict[str, str]) -> Dict[str, Any]:
         return {"keys": [jwk]}
 
     return {"keys": []}
+
+
+def ec_p256_jwk_to_public_pem(jwk: Dict[str, Any]) -> Optional[str]:
+    """Convert an EC P-256 JWK to a PEM-encoded public key."""
+    try:
+        from cryptography.hazmat.primitives.asymmetric import ec as _ec
+        from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+        import base64
+
+        if jwk.get("kty") != "EC" or jwk.get("crv") != "P-256":
+            return None
+        x_b = base64.urlsafe_b64decode(jwk["x"] + "==")
+        y_b = base64.urlsafe_b64decode(jwk["y"] + "==")
+        x = int.from_bytes(x_b, byteorder="big")
+        y = int.from_bytes(y_b, byteorder="big")
+        pub_numbers = _ec.EllipticCurvePublicNumbers(x, y, _ec.SECP256R1())
+        pub_key = pub_numbers.public_key()
+        pem = pub_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+        return pem.decode("utf-8")
+    except Exception:
+        return None
 

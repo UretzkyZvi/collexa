@@ -1,6 +1,9 @@
-from sqlalchemy import Column, String, DateTime, Text, JSON, Integer
+from sqlalchemy import Column, String, DateTime, Text, JSON, Integer, Float, ForeignKey
 from sqlalchemy.sql import func
+from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import JSONB
 from app.db.session import Base
+import uuid
 
 
 class User(Base):
@@ -91,3 +94,64 @@ class AuditLog(Base):
     ip_address = Column(String(45))  # IPv4/IPv6
     user_agent = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Sandbox(Base):
+    __tablename__ = "sandboxes"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), nullable=False)
+    org_id = Column(String, ForeignKey("orgs.id", ondelete="CASCADE"), nullable=False)
+    mode = Column(String, nullable=False)  # mock, emulated, connected
+    target_system = Column(String, nullable=True)
+    config_json = Column(JSON, nullable=True)
+    status = Column(String, nullable=False, default="created")  # created, running, stopped, error
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    # Relationships
+    runs = relationship("SandboxRun", back_populates="sandbox", cascade="all, delete-orphan")
+
+
+class SandboxRun(Base):
+    __tablename__ = "sandbox_runs"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    sandbox_id = Column(String, ForeignKey("sandboxes.id", ondelete="CASCADE"), nullable=False)
+    phase = Column(String, nullable=False)  # learn, eval
+    task_name = Column(String, nullable=True)
+    status = Column(String, nullable=False, default="running")  # running, completed, failed
+    input_json = Column(JSON, nullable=True)
+    output_json = Column(JSON, nullable=True)
+    error_json = Column(JSON, nullable=True)
+    started_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    finished_at = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    sandbox = relationship("Sandbox", back_populates="runs")
+
+
+class LearningPlan(Base):
+    __tablename__ = "learning_plans"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), nullable=False)
+    target_system = Column(String, nullable=True)
+    objectives_json = Column(JSON, nullable=True)
+    curriculum_json = Column(JSON, nullable=True)
+    status = Column(String, nullable=False, default="draft")  # draft, active, completed
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+
+
+class CapabilityAssessment(Base):
+    __tablename__ = "capability_assessments"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), nullable=False)
+    target_system = Column(String, nullable=True)
+    rubric_json = Column(JSON, nullable=True)
+    score = Column(Float, nullable=True)
+    last_evaluated_at = Column(DateTime(timezone=True), nullable=True)
+    evidence_run_ids = Column(JSON, nullable=True)  # Store as JSON array for SQLite compatibility
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)

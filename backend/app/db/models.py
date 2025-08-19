@@ -67,6 +67,17 @@ class AgentKey(Base):
     revoked_at = Column(DateTime(timezone=True), nullable=True)
 
 
+class A2AManifest(Base):
+    __tablename__ = "a2a_manifests"
+    id = Column(String(128), primary_key=True)  # agent_id:key_id or UUID
+    agent_id = Column(String(64), nullable=False)
+    version = Column(String(16), nullable=False)
+    manifest_json = Column(JSON, nullable=False)
+    signature = Column(Text)
+    key_id = Column(String(64), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     id = Column(Integer, primary_key=True, autoincrement=True)

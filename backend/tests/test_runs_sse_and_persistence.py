@@ -78,12 +78,18 @@ def test_sse_per_run_emits_log_and_complete(client, fake_auth):
     with client.stream("GET", f"/v1/runs/{run_id}/stream") as resp:
         assert resp.status_code == 200
         seen_types = set()
+        line_iter = resp.iter_lines()
         for _ in range(10):
-            line = resp.iter_lines().__next__()
+            try:
+                line = next(line_iter)
+            except StopIteration:
+                break
             if not line:
                 continue
-            if line.startswith(b"data: "):
-                data = line[len(b"data: ") :]
+            # Handle both string and bytes
+            line_str = line.decode("utf-8") if isinstance(line, bytes) else line
+            if line_str.startswith("data: "):
+                data = line_str[len("data: "):]
                 try:
                     obj = json.loads(data)
                     t = obj.get("type")

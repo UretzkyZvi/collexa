@@ -4,7 +4,7 @@ Uses in-memory storage for PoC; production would use Prometheus/DataDog.
 """
 import time
 from collections import defaultdict, deque
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from threading import Lock
 
@@ -45,23 +45,41 @@ class MetricsCollector:
             self._gauges[key] = value
     
     def get_counter(self, name: str, labels: Optional[Dict[str, str]] = None) -> int:
-        """Get current counter value."""
-        key = self._make_key(name, labels or {})
+        """Get counter value aggregated over all series matching the label filter.
+
+        If labels is None or empty, returns the sum over all series for the given name.
+        If labels is provided, returns the sum over series whose labels include
+        the provided labels as a subset (i.e., partial match / rollup by labels).
+        """
+        filter_labels = labels or {}
         with self._lock:
-            return self._counters.get(key, 0)
-    
+            items = list(self._counters.items())
+        total = 0
+        for key, value in items:
+            metric_name, series_labels = self._parse_key(key)
+            if metric_name != name:
+                continue
+            if self._labels_match(series_labels, filter_labels):
+                total += value
+        return total
+
     def get_histogram_stats(self, name: str, labels: Optional[Dict[str, str]] = None) -> Dict:
-        """Get histogram statistics (count, p50, p95, p99)."""
-        key = self._make_key(name, labels or {})
+        """Get histogram statistics (count, p50, p95, p99) aggregated by label filter."""
+        filter_labels = labels or {}
         with self._lock:
-            points = list(self._histograms.get(key, []))
-        
-        if not points:
+            items = list(self._histograms.items())
+        # Aggregate all matching values
+        values: List[float] = []
+        for key, dq in items:
+            metric_name, series_labels = self._parse_key(key)
+            if metric_name != name:
+                continue
+            if self._labels_match(series_labels, filter_labels):
+                values.extend([p.value for p in dq])
+        if not values:
             return {"count": 0, "p50": 0, "p95": 0, "p99": 0, "avg": 0}
-        
-        values = sorted([p.value for p in points])
+        values.sort()
         count = len(values)
-        
         return {
             "count": count,
             "p50": self._percentile(values, 0.5),
@@ -69,7 +87,7 @@ class MetricsCollector:
             "p99": self._percentile(values, 0.99),
             "avg": sum(values) / count,
         }
-    
+
     def get_gauge(self, name: str, labels: Optional[Dict[str, str]] = None) -> float:
         """Get current gauge value."""
         key = self._make_key(name, labels or {})
@@ -94,11 +112,33 @@ class MetricsCollector:
             return name
         label_str = ",".join(f"{k}={v}" for k, v in sorted(labels.items()))
         return f"{name}{{{label_str}}}"
-    
+
+    def _parse_key(self, key: str) -> Tuple[str, Dict[str, str]]:
+        """Parse a metric key back into name and labels dict."""
+        if "{" not in key:
+            return key, {}
+        name, rest = key.split("{", 1)
+        rest = rest.rstrip("}")
+        labels: Dict[str, str] = {}
+        if rest:
+            for part in rest.split(","):
+                if "=" in part:
+                    k, v = part.split("=", 1)
+                    labels[k] = v
+        return name, labels
+
+    def _labels_match(self, series_labels: Dict[str, str], filter_labels: Dict[str, str]) -> bool:
+        """Return True if all filter_labels are present and equal in series_labels."""
+        for k, v in filter_labels.items():
+            if series_labels.get(k) != v:
+                return False
+        return True
+
     def _percentile(self, values: List[float], p: float) -> float:
         """Calculate percentile from sorted values."""
         if not values:
             return 0.0
+        # Use nearest-rank style index
         index = int(p * (len(values) - 1))
         return values[index]
 

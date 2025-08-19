@@ -180,7 +180,15 @@ async def stream_run_logs(
             except asyncio.TimeoutError:
                 yield ": keep-alive\n\n"
                 continue
+            # Emit the message
             yield f"data: {msg}\n\n"
+            # If this is a completion event, close the stream to avoid client hangs
+            try:
+                obj = json.loads(msg)
+                if obj.get("type") == "complete":
+                    break
+            except Exception:
+                pass
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

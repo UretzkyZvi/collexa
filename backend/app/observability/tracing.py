@@ -28,9 +28,13 @@ class Span:
     
     @property
     def duration_ms(self) -> float:
-        """Get span duration in milliseconds."""
+        """Get span duration in milliseconds (never returns 0 for finished spans)."""
         end = self.end_time or time.time()
-        return (end - self.start_time) * 1000
+        delta = end - self.start_time
+        if self.end_time is not None and delta <= 0:
+            # Ensure strictly positive duration for finished spans on low-res clocks
+            delta = 1e-6
+        return delta * 1000
 
 
 # Context variable for current span

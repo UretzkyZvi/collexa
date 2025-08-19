@@ -1,6 +1,6 @@
 # Phase 2 Checklist (Milestone-by-Milestone Acceptance Criteria)
 
-## 🚀 Phase 2 Status: PLANNING
+## 🚀 Phase 2 Status: IN PROGRESS
 
 Phase 2 focuses on interoperability, security hardening, billing, and reproducibility. It builds directly on the completed Phase 1 PoC and moves the platform toward enterprise readiness and cross-agent collaboration.
 
@@ -65,7 +65,7 @@ Tasks
 - [ ] MCP: advertise real tool schemas with auth requirements; support capability invocation proxying
 - [ ] A2A: rotate and validate signed capability descriptors (key rotation + kid)
 - [ ] Cross‑agent tool sharing: allow Agent A to invoke Agent B via A2A with proper scoping and budgets
-- [ ] Manifest signing: produce versioned capability manifests; store signature + key_id
+- [x] **H.1 COMPLETE**: Manifest signing: produce versioned capability manifests; store signature + key_id ✅
 - [ ] Basic reputation: maintain per‑agent reliability and latency signals; compute a score
 - [ ] Policy hooks: pre‑invoke check (OPA) for cross‑agent calls
 
@@ -73,7 +73,7 @@ Acceptance Tests
 - [ ] External MCP client lists tools with schemas; invocation succeeds with auth
 - [ ] A2A descriptor signature validates; key rotation maintains validity for new descriptors
 - [ ] Agent A invokes Agent B; run recorded in both agents’ logs with linked provenance
-- [ ] Manifest signature verifies using published key; mismatch is rejected
+- [x] **H.1 COMPLETE**: Manifest signature verifies using published key; mismatch is rejected ✅
 - [ ] Reputation score updates after N runs; visible via GET /v1/agents/{id}
 
 ## Milestone I — Workspace UI & Organization Settings
@@ -114,14 +114,14 @@ Dependencies
 
 Tasks
 - [ ] RBAC: define roles (owner, admin, member, viewer) and permissions; enforce at API layer
-- [ ] ABAC via OPA: authoring and evaluation for data/tool access; attach policy bundle per org
+- [x] **J.1 COMPLETE**: ABAC via OPA: authoring and evaluation for data/tool access; attach policy bundle per org ✅
 - [ ] SSO (SAML/OIDC): integrate one provider end‑to‑end; map SSO groups to roles
 - [ ] Approvals: policy‑gated approvals for sensitive actions (external network calls, budget overrides)
 - [ ] Audit expansion: record policy decisions and approval trails
 
 Acceptance Tests
 - [ ] Permissions matrix enforced (unit/integration); unauthorized actions return 403/404
-- [ ] OPA policies can deny an invoke based on attributes (user role, project tag); decision logged
+- [x] **J.1 COMPLETE**: OPA policies can deny an invoke based on attributes (user role, project tag); decision logged ✅
 - [ ] SSO login completes; role mapped from group claim; local user/session created
 - [ ] Approval required path blocks until approved; approval and execution are fully logged
 
@@ -245,8 +245,14 @@ Acceptance Tests
 
 - [ ] K.1 Stripe: customer + checkout + webhooks (happy path)
 - [ ] I.1 Budgets UI scaffold and persistence (org/agent)
-- [ ] J.1 OPA scaffold: policy bundle model + evaluation stub integrated
-- [ ] H.1 Manifest signing prototype and key rotation plan
+- [x] **J.1 COMPLETE**: OPA scaffold: policy bundle model + evaluation stub integrated ✅
+- [x] **H.1 COMPLETE**: Manifest signing prototype and key rotation plan ✅
+
+## Next Sprint (Phase 2 continuation)
+
+- [ ] **N.1 IN PROGRESS**: Agent Sandbox Environments - mock mode + learning plan + progress tracking
+- [ ] I.1 Budgets UI scaffold and persistence (org/agent)
+- [ ] K.1 Stripe: customer + checkout + webhooks (happy path)
 
 ## Backlog (Shortlist)
 

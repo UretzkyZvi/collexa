@@ -12,6 +12,7 @@ from app.api.routers.metrics import router as metrics_router
 from app.api.routers.agents_manifests import router as agents_manifests_router
 from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.audit_middleware import AuditMiddleware
+from app.middleware.policy_middleware import PolicyEnforcementMiddleware
 from app.mcp import router as mcp_router
 
 app = FastAPI(title="Collexa API", version="0.1.0")
@@ -25,9 +26,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Coarse auth middleware for /v1/*
-app.add_middleware(AuthMiddleware)
+# Middleware stack (order matters - last added runs first)
 app.add_middleware(AuditMiddleware)
+# TODO: Enable PolicyEnforcementMiddleware when OPA is configured
+# app.add_middleware(PolicyEnforcementMiddleware)
+app.add_middleware(AuthMiddleware)
 
 
 @app.get("/health")

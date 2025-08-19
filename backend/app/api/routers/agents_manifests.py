@@ -18,18 +18,13 @@ from app.db import models
 router = APIRouter()
 
 
-def _load_jwks() -> Dict[str, Any] | None:
-    """Load JWKS from env variables. Prefer MANIFEST_JWKS_JSON; fallback to PEM is TODO."""
-    jwks_env = os.getenv("MANIFEST_JWKS_JSON")
-    if jwks_env:
-        try:
-            jwks = json.loads(jwks_env)
-            if isinstance(jwks, dict) and "keys" in jwks:
-                return jwks
-        except Exception:
-            pass
-    # NOTE: In a later change, derive JWK from MANIFEST_PUBLIC_KEY_PEM using cryptography if present.
-    return None
+def _load_jwks() -> Dict[str, Any]:
+    """Load JWKS from env variables, deriving from PEM if needed."""
+    from app.security.jwks import derive_jwks_from_env
+
+    # Construct an env dict explicitly to allow test injection
+    env = {k: v for k, v in os.environ.items() if k.startswith("MANIFEST_")}
+    return derive_jwks_from_env(env)
 
 
 @router.post("/agents/{agent_id}/manifests")

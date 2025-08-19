@@ -11,6 +11,10 @@ alembic>=1.13,<2.0
 psycopg2-binary>=2.9,<3.0
 requests>=2.32,<3.0
 
+# Crypto / JOSE for H.1 manifest signing & JWKS
+python-jose[cryptography]>=3.3,<4.0
+cryptography>=42,<45
+
 # Optional: load .env automatically on startup (not wired yet)
 python-dotenv>=1.0,<2.0
 

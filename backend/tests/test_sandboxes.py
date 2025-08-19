@@ -1,33 +1,41 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, patch, MagicMock
 from app.main import app
 from app.db import models
+from app.api.deps import get_db
 
 
 client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
-def patch_stack_auth(monkeypatch):
-    """Mock Stack Auth for all tests."""
+def patch_dependencies(monkeypatch):
+    """Mock Stack Auth and database for all tests."""
     def fake_verify_token(token: str):
-        if token == "Bearer fake-token":
+        if token == "fake-token":  # Note: without "Bearer " prefix
             return {"id": "test-user", "selectedTeamId": "test-org"}
         raise Exception("invalid token")
 
     def fake_verify_team(team_id: str, token: str):
-        if token != "Bearer fake-token":
+        if token != "fake-token":  # Note: without "Bearer " prefix
             raise Exception("invalid token")
         if team_id != "test-org":
             raise Exception("not a member")
         return {"id": team_id}
+
+    def fake_set_rls(db, org_id):
+        # Mock RLS setting - do nothing
+        pass
 
     monkeypatch.setattr(
         "app.security.stack_auth.verify_stack_access_token", fake_verify_token
     )
     monkeypatch.setattr(
         "app.security.stack_auth.verify_team_membership", fake_verify_team
+    )
+    monkeypatch.setattr(
+        "app.db.session.set_rls_for_session", fake_set_rls
     )
 
 
@@ -37,34 +45,45 @@ def test_create_sandbox_requires_auth():
     assert response.status_code == 401
 
 
-def test_create_sandbox_mock_mode(mock_auth, mock_db):
+def test_create_sandbox_mock_mode():
     """Test creating a sandbox in mock mode."""
-    # Mock agent exists
+    # Create mock database
+    mock_db = MagicMock()
     mock_agent = models.Agent(id="test-agent", org_id="test-org", display_name="Test agent")
     mock_db.query.return_value.filter.return_value.first.return_value = mock_agent
-    
-    # Mock sandbox service
-    with patch('app.api.routers.sandboxes.SandboxService') as mock_service:
-        mock_service_instance = AsyncMock()
-        mock_service.return_value = mock_service_instance
-        
-        response = client.post(
-            "/v1/agents/test-agent/sandboxes",
-            json={
-                "mode": "mock",
-                "target_system": "figma",
-                "config": {"api_version": "v1"}
-            },
-            headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
-        )
-    
-    assert response.status_code == 200
-    data = response.json()
-    assert data["mode"] == "mock"
-    assert data["target_system"] == "figma"
-    assert "sandbox_id" in data
-    assert "endpoints" in data
-    assert data["endpoints"]["mock_api"].startswith("http://localhost:4010/")
+
+    # Override dependencies
+    def get_mock_db():
+        return mock_db
+
+    app.dependency_overrides[get_db] = get_mock_db
+
+    try:
+        # Mock sandbox service
+        with patch('app.api.routers.sandboxes.SandboxService') as mock_service:
+            mock_service_instance = AsyncMock()
+            mock_service.return_value = mock_service_instance
+
+            response = client.post(
+                "/v1/agents/test-agent/sandboxes",
+                json={
+                    "mode": "mock",
+                    "target_system": "figma",
+                    "config": {"api_version": "v1"}
+                },
+                headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["mode"] == "mock"
+        assert data["target_system"] == "figma"
+        assert "sandbox_id" in data
+        assert "endpoints" in data
+        assert data["endpoints"]["mock_api"].startswith("http://localhost:4010/")
+    finally:
+        # Clean up dependency override
+        app.dependency_overrides.clear()
 
 
 def test_create_sandbox_unsupported_mode(mock_auth, mock_db):

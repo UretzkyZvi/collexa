@@ -59,10 +59,20 @@ def test_create_sandbox_mock_mode():
     app.dependency_overrides[get_db] = get_mock_db
 
     try:
-        # Mock sandbox service
-        with patch('app.api.routers.sandboxes.SandboxService') as mock_service:
-            mock_service_instance = AsyncMock()
-            mock_service.return_value = mock_service_instance
+        # Mock sandbox service methods
+        with patch('app.services.sandbox_service.SandboxService._get_default_mock_endpoints') as mock_endpoints, \
+             patch('app.services.sandbox_service.SandboxService.start_sandbox') as mock_start:
+
+            mock_endpoints.return_value = {
+                "base_url": "http://localhost:4000/sandbox/{sandbox_id}/figma",
+                "prism_url": "http://localhost:4010",
+                "spec_file": "sandbox-specs/figma/figma-api.yaml",
+                "endpoints": {
+                    "/me": {"method": "GET", "description": "Get current user info"},
+                    "/files/{file_key}": {"method": "GET", "description": "Get file information"},
+                }
+            }
+            mock_start.return_value = None  # Async method returns None
 
             response = client.post(
                 "/v1/agents/test-agent/sandboxes",
@@ -80,7 +90,13 @@ def test_create_sandbox_mock_mode():
         assert data["target_system"] == "figma"
         assert "sandbox_id" in data
         assert "endpoints" in data
-        assert data["endpoints"]["mock_api"].startswith("http://localhost:4010/")
+        assert data["endpoints"]["mock_api"].startswith("http://localhost:4000/sandbox/")
+        assert data["endpoints"]["mock_api"].endswith("/figma")
+        assert "prism_direct" in data["endpoints"]
+        assert data["endpoints"]["prism_direct"] == "http://localhost:4010"
+        assert "available_endpoints" in data
+        assert "/me" in data["available_endpoints"]
+        assert "spec_file" in data
     finally:
         # Clean up dependency override
         app.dependency_overrides.clear()

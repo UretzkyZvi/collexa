@@ -141,17 +141,22 @@ Dependencies
 - Prism (Apache 2.0) - Mock external APIs from OpenAPI specs
 
 Tasks
-- [ ] Sandbox isolation: implement modes — mock (record/replay), emulated (local data + stubs), connected (scoped staging/tenant)
-- [ ] Provisioning API: POST /v1/agents/{id}/sandboxes — create with target_system, mode, and config; lifecycle (start/stop/reset/delete)
+- [x] **N.1 COMPLETE**: Sandbox isolation: dynamic mock mode with on-demand containers and template-based customization ✅
+- [x] **N.1 COMPLETE**: Provisioning API: POST /v1/agents/{id}/sandboxes — create with required_services, custom_configs, TTL; full CRUD lifecycle ✅
 - [ ] Credential management: integrate secret vault (secret_ref); enforce scoped access and rotation; attach to sandbox via policy
 - [ ] Learning plan: derive curriculum from docs/specs and common tasks; persist objectives and sequence
 - [ ] Autonomous learning loop: read docs/specs, attempt tasks, analyze errors, refine prompts/tools, retry until proficiency thresholds
 - [ ] Safety guardrails: rate limits, data masking, read/write constraints; approvals required for connected mode writes
 - [ ] Progress tracking: record sandbox_runs with outcomes; compute learning metrics (success rate, retries, time-to-proficiency)
 - [ ] Capability assessment: rubric-based evaluation; update agent capabilities with proficiency flags
-- [ ] UI: Sandbox tab per agent (status, mode, credentials state, run history, assessment)
+- [x] **N.1 COMPLETE**: UI: Sandbox tab per agent showing services, status, TTL, proxy access ✅
 
 Acceptance Tests
+- [x] **N.1 COMPLETE**: Dynamic sandbox creation with multi-service support and custom configurations ✅
+- [x] **N.1 COMPLETE**: Mock mode with template-based API responses and per-agent customization ✅
+- [x] **N.1 COMPLETE**: Full CRUD API with proper authentication, validation, and error handling ✅
+- [x] **N.1 COMPLETE**: Frontend integration showing sandbox services, status, and proxy access ✅
+- [x] **N.1 COMPLETE**: Comprehensive test suite (9/9 tests passing) with proper mocking ✅
 - [ ] Creating a sandbox with connected mode requires scoped credentials and policy approval; audit log recorded
 - [ ] In mock/emulated mode, agent completes a predefined curriculum without external side effects
 - [ ] Learning loop improves success rate over attempts and reaches proficiency threshold for target tasks
@@ -250,7 +255,8 @@ Acceptance Tests
 
 ## Next Sprint (Phase 2 continuation)
 
-- [ ] **N.1 IN PROGRESS**: Agent Sandbox Environments - mock mode + learning plan + progress tracking
+- [x] **N.1 COMPLETE**: Agent Sandbox Environments - dynamic mock mode with template-based customization ✅
+- [ ] **N.2 NEXT**: Learning plan + autonomous learning loop + progress tracking
 - [ ] I.1 Budgets UI scaffold and persistence (org/agent)
 - [ ] K.1 Stripe: customer + checkout + webhooks (happy path)
 

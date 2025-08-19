@@ -1,0 +1,21 @@
+{
+  "org_owners": {
+    "o1": "u1",
+    "test-org": "test-user"
+  },
+  "user_permissions": {
+    "u1": {
+      "invoke": true,
+      "create_agent": true,
+      "delete_agent": true
+    },
+    "u2": {
+      "get_status": true,
+      "list_agents": true
+    },
+    "test-user": {
+      "test_capability": true,
+      "get_status": true
+    }
+  }
+}

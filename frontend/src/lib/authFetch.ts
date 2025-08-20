@@ -1,10 +1,12 @@
 "use client";
 import { useUser } from "@stackframe/stack";
+import { useProjectContext } from "~/hooks/project-context";
 
 type FetchOptions = RequestInit & { auth?: boolean; teamId?: string | null };
 
 export function useAuthFetch() {
   const user = useUser();
+  const { selectedProjectId } = useProjectContext();
 
   return async function authFetch(input: string | URL, init?: FetchOptions) {
     const opts: RequestInit = { ...(init ?? {}) };
@@ -17,6 +19,7 @@ export function useAuthFetch() {
         Authorization: `Bearer ${accessToken}`,
       };
       if (teamId) headers["X-Team-Id"] = teamId;
+      if (selectedProjectId) headers["X-Project-Id"] = selectedProjectId;
       opts.headers = headers;
     }
     return fetch(input, opts);

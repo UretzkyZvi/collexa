@@ -30,6 +30,7 @@ import {
 import { TeamSwitcher } from "~/components/TeamSwitcher";
 import { cn } from "~/lib/utils";
 import OnboardingGate from "~/components/OnboardingGate";
+import ProjectSelector from "~/components/ProjectSelector";
 
 const links = [
   { href: "/", label: "Dashboard" },
@@ -52,6 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="text-xs text-muted-foreground">AI Agent PoC</div>
           </div>
           <TeamSwitcher />
+          <div className="px-2 py-1"><ProjectSelector /></div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>

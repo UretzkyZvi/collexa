@@ -6,7 +6,7 @@ Phase 2 focuses on interoperability, security hardening, billing, and reproducib
 
 - Target Window: Months 3–4
 - KPIs: cross‑agent invocation p50 < 2s; reproducible runs with signed logs
-- Carryovers from Phase 1: Stripe integration; builder stub (optional)
+- Carryovers from Phase 1: payment provider integration; builder stub (optional)
 
 ### � Supporting Documentation
 - **[Phase 2 Dependencies](./phase2-dependencies.md)**: Open-source library recommendations with licenses, integration complexity, and risks
@@ -17,7 +17,7 @@ Phase 2 focuses on interoperability, security hardening, billing, and reproducib
 - Milestone I: Workspace UI & Organization Settings
 - Milestone J: Advanced Security (RBAC/ABAC via OPA, SSO)
 - Milestone N: Agent Sandbox Environments & Autonomous Learning
-- Milestone K: Billing & Budgets (Stripe Integration)
+- Milestone K: Billing & Budgets (Payment Provider Integration)
 - Milestone L: Reproducibility & Signed Logs
 - Milestone M: Performance & Reliability (p50 < 2s)
 
@@ -28,7 +28,7 @@ This checklist tracks the minimum features and quality gates to accept each Phas
 ## Database & Schema (Postgres) — Phase 2 scope
 
 Schema extensions (new or updated)
-- orgs: ensure stripe_customer_id is populated via Stripe (Milestone K)
+- orgs: ensure payment_customer_id is populated via payment provider (Milestone K)
 - org_policies: OPA policy references per org (id, org_id, name, rego_text, version, created_at)
 - roles, permissions, role_permissions: RBAC (role, permission) mapping (Milestone J)
 - approvals: approval gates for sensitive ops (id, org_id, subject_type, subject_id, status, approver_id, created_at, decided_at)
@@ -88,12 +88,12 @@ Dependencies
 - Apprise (BSD-2-Clause) - Multi-channel alerts for budget events
 
 Tasks
-- [ ] Projects/workspaces: create/select project; group agents, runs, logs by project
+- [x] Projects/workspaces: project selector added next to TeamSwitcher; X-Project-Id propagated via useAuthFetch; placeholder CRUD pending backend
 - [ ] Agent management: create/edit; manage capabilities and keys; view reputation and manifests
-- [ ] Budgets UI: set org/agent budget limits; alerts configuration
-- [ ] Logs & runs: improved filters (project/agent/status), replay link to reproduce run
-- [ ] Org Settings: domain, SSO providers (placeholders), policy attachments (view‑only pending Milestone J)
-- [ ] UX polish: empty states, error handling, accessibility checks
+- [ ] Budgets UI: set org/agent budget limits; alerts configuration (scaffold + create flow implemented; edit/alerts/charts pending)
+- [x] Logs & runs: Shadcn Data Table with sorting/pagination scaffold; Agent/Status/Date filters; Replay link to run details; querystring sync
+- [x] Org Settings: new /settings/organization page with placeholders (domain, SSO, policy attachments)
+- [ ] UX polish: empty states, error handling, accessibility checks (loading/empty states added; a11y polish ongoing)
 
 Acceptance Tests
 - [ ] Users can create a project and scope views to it; all calls include project context
@@ -163,26 +163,26 @@ Acceptance Tests
 - [ ] Capability assessment stored and visible via GET /v1/agents/{id}; UI shows competency badge
 - [ ] Resetting a sandbox clears state but preserves provenance logs and assessments
 
-## Milestone K — Billing & Budgets (Stripe Integration)
+## Milestone K — Billing & Budgets (Payment Provider Integration)
 
 Dependencies
 - Phase 1 backlog item; Milestone I (Budgets UI)
 
 **Key Libraries** (see [phase2-dependencies.md](./phase2-dependencies.md#milestone-k--billing--budgets))
-- Celery (BSD) - Async processing of Stripe webhooks and metering
+- Celery (BSD) - Async processing of payment provider webhooks and metering
 - fastapi-limiter (MIT) - Budget enforcement via rate/quotas per org/agent
 - APScheduler (MIT) - Scheduled budget checks and threshold alerts
 - OpenMeter (Apache 2.0) - Usage metering pipeline and aggregation
 
 Tasks
-- [ ] Stripe customer creation on signup; store stripe_customer_id in orgs
+- [ ] Payment provider customer creation on signup; store payment_customer_id in orgs
 - [ ] Checkout flow for paid plans; webhooks for subscription lifecycle (created/updated/canceled)
-- [ ] Metering webhook(s): post usage from runs to Stripe (or internal ledger) with cost tokens/cents
+- [ ] Metering webhook(s): post usage from runs to the payment provider (or internal ledger) with cost tokens/cents
 - [ ] Budget enforcement: soft/hard caps at org/agent level; alerts via email/webhook
 - [ ] Admin UI: plan status, payment method, invoices
 
 Acceptance Tests
-- [ ] New org triggers Stripe customer; ID stored; webhook verifies signature
+- [ ] New org triggers payment provider customer; ID stored; webhook verifies signature
 - [ ] Successful checkout updates plan in DB; cancel/delinquent reflected within 5 min
 - [ ] Over‑budget invoke returns 402/429 as configured; alert sent and logged
 
@@ -248,8 +248,8 @@ Acceptance Tests
 
 ## Current Sprint (Phase 2 kickoff — 1–2 weeks)
 
-- [ ] K.1 Stripe: customer + checkout + webhooks (happy path)
-- [ ] I.1 Budgets UI scaffold and persistence (org/agent)
+- [ ] K.1 Payment provider: customer + checkout + webhooks (happy path)
+- [x] I.1 Budgets UI scaffold and persistence (org/agent) — implemented (list + create)
 - [x] **J.1 COMPLETE**: OPA scaffold: policy bundle model + evaluation stub integrated ✅
 - [x] **H.1 COMPLETE**: Manifest signing prototype and key rotation plan ✅
 
@@ -257,8 +257,8 @@ Acceptance Tests
 
 - [x] **N.1 COMPLETE**: Agent Sandbox Environments - dynamic mock mode with template-based customization ✅
 - [ ] **N.2 NEXT**: Learning plan + autonomous learning loop + progress tracking
-- [ ] I.1 Budgets UI scaffold and persistence (org/agent)
-- [ ] K.1 Stripe: customer + checkout + webhooks (happy path)
+- [ ] I.1 Workspace: projects/workspaces selector & scoping; Logs filters + replay link; Org Settings placeholders
+- [ ] K.1 Payment provider: customer + checkout + webhooks (happy path)
 
 ## Backlog (Shortlist)
 

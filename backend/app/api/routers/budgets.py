@@ -16,7 +16,7 @@ from app.db import models
 from app.services.budget_service import BudgetService, BudgetPeriod, EnforcementMode
 from app.services.usage_orchestrator import UsageOrchestrator
 from app.services.usage.cost_calculation_service import CostCalculationService
-from app.middleware.auth_middleware import get_current_org_id
+from app.api.deps import get_current_org_id
 import logging
 
 logger = logging.getLogger(__name__)

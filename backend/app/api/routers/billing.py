@@ -6,7 +6,7 @@ from typing import Optional
 from app.db.session import get_db
 from app.services.billing_orchestrator import BillingOrchestrator
 from app.services.payment.protocol import PaymentProviderError
-from app.middleware.auth_middleware import get_current_org_id
+from app.api.deps import get_current_org_id
 import logging
 
 logger = logging.getLogger(__name__)

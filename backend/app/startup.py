@@ -11,6 +11,7 @@ from contextlib import asynccontextmanager
 
 from app.services.scheduling.budget_scheduler_service import budget_scheduler
 from app.services.notifications.alert_service import alert_service
+from app.services.http_client import close_http_client
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,10 @@ async def lifespan(app):
         # Stop the budget scheduler
         await budget_scheduler.stop()
         logger.info("Budget scheduler stopped successfully")
+
+        # Close shared HTTP client
+        await close_http_client()
+        logger.info("HTTP client closed")
         
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")

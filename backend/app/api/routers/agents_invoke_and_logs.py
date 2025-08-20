@@ -96,7 +96,25 @@ async def invoke_agent(
     db.commit()
     await asyncio.sleep(0.05)
 
-    result = {"echo": payload}
+    # Optional cross-agent invocation demo: if capability == "cross_call" and input.target_agent is provided
+    if capability == "cross_call":
+        try:
+            from app.services.agent_client import invoke_agent_http
+            target_agent = (payload.get("input") or {}).get("target_agent")
+            if target_agent:
+                # Propagate auth context for intra-org call
+                result = await invoke_agent_http(
+                    target_agent,
+                    {"capability": "echo", "input": {"from": agent_id}},
+                    access_token=auth.get("access_token"),
+                    team_id=auth.get("org_id"),
+                )
+            else:
+                result = {"echo": payload}
+        except Exception as e:
+            result = {"error": "cross_call_failed", "detail": str(e)}
+    else:
+        result = {"echo": payload}
     run.status = "succeeded"
     run.output = result
     db.commit()

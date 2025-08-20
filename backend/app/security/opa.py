@@ -8,7 +8,9 @@ import asyncio
 class OPAPolicyEngine:
     def __init__(self, opa_url: str = None):
         self.opa_url = opa_url or os.getenv("OPA_URL", "http://localhost:8181")
-        self.client = httpx.AsyncClient(timeout=5.0)
+        # Reuse shared pooled client for efficiency
+        from app.services.http_client import get_http_client
+        self.client = get_http_client()
     
     async def close(self):
         """Close the HTTP client."""

@@ -21,3 +21,14 @@ python-dotenv>=1.0,<2.0
 # HTTP client for OPA integration (J.1)
 httpx>=0.27,<1.0
 
+# Payment providers (K.1)
+stripe>=7.0,<8.0
+
+# Async task processing (Phase 2 enhancement)
+celery>=5.3,<6.0
+redis>=5.0,<6.0
+
+# Scheduling and notifications (Phase 2 enhancement)
+apscheduler>=3.10,<4.0
+apprise>=1.7,<2.0
+

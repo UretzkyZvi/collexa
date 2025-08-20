@@ -56,6 +56,16 @@ async def require_auth(
     return ctx
 
 
+async def get_current_org_id(ctx: Dict[str, Any] = Depends(require_auth)) -> str:
+    """Convenience dependency to extract org_id from the authenticated context.
+    Ensures DB RLS is set via require_auth.
+    """
+    org_id = ctx.get("org_id")
+    if not org_id:
+        raise HTTPException(status_code=403, detail="Missing organization context")
+    return org_id
+
+
 async def require_team(
     request: Request,
     authorization: Optional[str] = Header(None),

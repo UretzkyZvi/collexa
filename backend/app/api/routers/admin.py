@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
 
 from app.db.session import get_db
-from app.middleware.auth_middleware import get_current_org_id
+from app.api.deps import get_current_org_id
 from app.services.scheduling.budget_scheduler_service import budget_scheduler
 from app.services.notifications.alert_service import alert_service, AlertSeverity
 from app.services.billing.async_webhook_service import celery_app

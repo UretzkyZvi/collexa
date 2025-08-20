@@ -13,12 +13,15 @@ export default function ProjectSelector() {
 
   return (
     <div className="flex items-center gap-2">
-      <Select value={selectedProjectId ?? undefined} onValueChange={(v) => setSelectedProjectId(v)}>
+      <Select
+        value={selectedProjectId ?? undefined}
+        onValueChange={(v) => setSelectedProjectId(v === "ALL" ? null : v)}
+      >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="All projects" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">All projects</SelectItem>
+          <SelectItem value="ALL">All projects</SelectItem>
           {projects.map((p) => (
             <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
           ))}

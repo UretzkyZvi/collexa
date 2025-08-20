@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { useAuthFetch } from "~/lib/authFetch";
-import { useRouter } from "next/navigation";
+
 import { CodeBlock } from "~/components/CodeBlock";
 
 type Instruction = { id: string; label: string; language: string; code: string };
@@ -12,21 +13,22 @@ function copy(text: string) {
   } catch {}
 }
 
-export default function InstructionsPage({ params }: { params: { id: string } }) {
+export default function InstructionsPage() {
+  const { id } = useParams<{ id: string }>();
   const authFetch = useAuthFetch();
   const router = useRouter();
   const [data, setData] = useState<{ agent_id: string; instructions: Instruction[] } | null>(null);
 
   useEffect(() => {
     (async () => {
-      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${params.id}/instructions`, { method: "GET" });
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${id}/instructions`, { method: "GET" });
       if (!res.ok) {
         router.replace("/404");
         return;
       }
       setData(await res.json());
     })();
-  }, [params.id]);
+  }, [id]);
 
   const host = useMemo(() => (typeof window !== "undefined" ? window.location.host : "<host>"), []);
 
@@ -39,7 +41,7 @@ export default function InstructionsPage({ params }: { params: { id: string } })
           <section key={ins.id} className="rounded border bg-card p-4">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold">{ins.label}</h2>
-              <button className="text-xs underline" onClick={() => copy(ins.code.replaceAll("<host>", host).replaceAll("<agent-id>", params.id))}>Copy</button>
+              <button className="text-xs underline" onClick={() => copy(ins.code.replaceAll("<host>", host).replaceAll("<agent-id>", id))}>Copy</button>
             </div>
             <CodeBlock language={ins.language} code={ins.code} />
           </section>

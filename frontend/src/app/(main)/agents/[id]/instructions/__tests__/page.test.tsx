@@ -6,10 +6,13 @@ jest.mock("~/lib/authFetch", () => ({ useAuthFetch: () => async () => ({ ok: tru
   { id: "make", label: "Make.com (HTTP)", language: "text", code: "POST https://api.<host>/v1/agents/<agent-id>/invoke" },
 ] }) }) }));
 
-jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn() }) }));
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: jest.fn() }),
+  useParams: () => ({ id: "agent-xyz" }),
+}));
 import InstructionsPage from "../page";
 test("Instructions page renders and copies with placeholders", async () => {
-  render(<InstructionsPage params={{ id: "agent-xyz" }} /> as any);
+  render(<InstructionsPage />);
 
   // Wait for content
   await screen.findByText(/Instructions Pack/i);

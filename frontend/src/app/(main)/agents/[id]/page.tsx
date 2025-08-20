@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthFetch } from "~/lib/authFetch";
@@ -48,9 +49,10 @@ interface SandboxRun {
   metrics?: Record<string, any>;
 }
 
-export default function AgentDetailPage({ params }: { params: { id: string } }) {
+export default function AgentDetailPage() {
   const authFetch = useAuthFetch();
   const router = useRouter();
+  const { id } = useParams<{ id: string }>();
   const [agent, setAgent] = useState<Agent | null>(null);
   const [sandboxes, setSandboxes] = useState<Sandbox[]>([]);
   const [sandboxRuns, setSandboxRuns] = useState<SandboxRun[]>([]);
@@ -61,13 +63,13 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
   useEffect(() => {
     loadAgent();
     loadSandboxes();
-  }, [params.id]);
+  }, [id]);
 
   const loadAgent = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${params.id}`, { method: "GET" });
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${id}`, { method: "GET" });
       if (res.ok) {
         const data = await res.json();
         setAgent(data);
@@ -88,7 +90,7 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
   const loadSandboxes = async () => {
     try {
       setSandboxLoading(true);
-      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${params.id}/sandboxes`, { method: "GET" });
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${id}/sandboxes`, { method: "GET" });
       if (res.ok) {
         const data = await res.json();
         setSandboxes(data.sandboxes || []);
@@ -107,7 +109,7 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
   const createSandbox = async (targetSystem: string) => {
     try {
       setSandboxLoading(true);
-      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${params.id}/sandboxes`, {
+      const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/agents/${id}/sandboxes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -117,7 +119,7 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
               service_type: targetSystem,
               workspace_config: {
                 environment: "agent_testing",
-                created_by: `agent_${params.id}`
+                created_by: `agent_${id}`
               }
             }
           },

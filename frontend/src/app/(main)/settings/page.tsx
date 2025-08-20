@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuthFetch } from "@/hooks/useAuthFetch";
+import { useAuthFetch } from "~/lib/authFetch";
 
 interface ApiKey {
   key_id: string;
@@ -94,7 +94,10 @@ export default function SettingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8">Settings</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Settings</h1>
+        <a href="/settings/organization" className="text-sm underline">Organization Settings</a>
+      </div>
 
       {/* API Keys Section */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">

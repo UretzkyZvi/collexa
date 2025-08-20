@@ -1,0 +1,252 @@
+openapi: 3.0.3
+info:
+  title: Generic REST API (Dynamic Sandbox)
+  description: Customizable generic REST API for agent sandbox {{ sandbox_id }}
+  version: 1.0.0
+  contact:
+    name: Collexa Dynamic Sandbox
+    url: https://github.com/UretzkyZvi/collexa
+servers:
+  - url: /
+    description: Generic API (mocked)
+paths:
+  /status:
+    get:
+      summary: Get API status
+      operationId: getStatus
+      responses:
+        '200':
+          description: API status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "{{ custom_responses.get('/status', {}).get('status', 'ok') }}"
+                  version:
+                    type: string
+                    example: "{{ workspace_config.get('api_version', '1.0.0') }}"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "{{ timestamp }}"
+                  uptime:
+                    type: integer
+                    example: {{ workspace_config.get('uptime_seconds', 86400) }}
+                    description: Uptime in seconds
+                  environment:
+                    type: string
+                    example: "{{ workspace_config.get('environment', 'sandbox') }}"
+
+  /items:
+    get:
+      summary: List items
+      operationId: listItems
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search query
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [electronics, books, clothing, home]
+          description: Filter by category
+      responses:
+        '200':
+          description: List of items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "item_{{ workspace_config.get('item_prefix', '123') }}"
+                        name:
+                          type: string
+                          example: "{{ workspace_config.get('sample_item_name', 'Sample Product') }}"
+                        description:
+                          type: string
+                          example: "{{ workspace_config.get('sample_item_description', 'A sample product for testing') }}"
+                        price:
+                          type: number
+                          format: float
+                          example: {{ workspace_config.get('sample_price', 99.99) }}
+                        category:
+                          type: string
+                          example: "{{ workspace_config.get('default_category', 'electronics') }}"
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      total:
+                        type: integer
+                        example: {{ workspace_config.get('total_items', 100) }}
+                      pages:
+                        type: integer
+                        example: {{ workspace_config.get('total_pages', 10) }}
+    
+    post:
+      summary: Create a new item
+      operationId: createItem
+      security:
+        - apiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "New Product"
+                description:
+                  type: string
+                  example: "A new product created by agent"
+                price:
+                  type: number
+                  format: float
+                  example: 199.99
+                category:
+                  type: string
+                  enum: [electronics, books, clothing, home]
+                  example: "electronics"
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  example: ["agent-created", "test"]
+              required:
+                - name
+                - price
+                - category
+      responses:
+        '201':
+          description: Item created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "item_new_456"
+                  name:
+                    type: string
+                    example: "New Product"
+                  status:
+                    type: string
+                    example: "created"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "{{ timestamp }}"
+
+  /items/{item_id}:
+    get:
+      summary: Get item by ID
+      operationId: getItem
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "item_123"
+      responses:
+        '200':
+          description: Item details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "item_123"
+                  name:
+                    type: string
+                    example: "{{ workspace_config.get('sample_item_name', 'Sample Product') }}"
+                  description:
+                    type: string
+                    example: "{{ workspace_config.get('sample_item_description', 'A sample product for testing') }}"
+                  price:
+                    type: number
+                    format: float
+                    example: {{ workspace_config.get('sample_price', 99.99) }}
+                  category:
+                    type: string
+                    example: "{{ workspace_config.get('default_category', 'electronics') }}"
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: "{{ timestamp }}"
+        '404':
+          description: Item not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Item not found"
+                  code:
+                    type: string
+                    example: "ITEM_NOT_FOUND"
+
+{% for endpoint in custom_endpoints %}
+  {{ endpoint.path }}:
+    {{ endpoint.method.lower() }}:
+      summary: {{ endpoint.summary }}
+      operationId: {{ endpoint.operationId }}
+      {% if endpoint.security %}
+      security:
+        - apiKey: []
+      {% endif %}
+      responses:
+        '200':
+          description: {{ endpoint.description }}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  {{ endpoint.response | tojson }}
+{% endfor %}
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key

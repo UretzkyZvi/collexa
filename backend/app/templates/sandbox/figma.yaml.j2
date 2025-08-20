@@ -1,0 +1,249 @@
+openapi: 3.0.3
+info:
+  title: Figma API (Dynamic Sandbox)
+  description: Customizable Figma API mock for agent sandbox {{ sandbox_id }}
+  version: 1.0.0
+  contact:
+    name: Collexa Dynamic Sandbox
+    url: https://github.com/UretzkyZvi/collexa
+servers:
+  - url: /
+    description: Figma API (mocked)
+paths:
+  /me:
+    get:
+      summary: Get current user info
+      operationId: getCurrentUser
+      security:
+        - figmaToken: []
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "{{ custom_responses.get('/me', {}).get('id', 'agent_user_123') }}"
+                  email:
+                    type: string
+                    example: "{{ custom_responses.get('/me', {}).get('email', 'agent@collexa.com') }}"
+                  handle:
+                    type: string
+                    example: "{{ custom_responses.get('/me', {}).get('handle', 'collexa_agent') }}"
+                  img_url:
+                    type: string
+                    example: "{{ custom_responses.get('/me', {}).get('img_url', 'https://avatar.figma.com/agent.png') }}"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 401
+                  err:
+                    type: string
+                    example: "Invalid token"
+  
+  /files/{file_key}:
+    get:
+      summary: Get file information
+      operationId: getFile
+      security:
+        - figmaToken: []
+      parameters:
+        - name: file_key
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "ABC123DEF456"
+      responses:
+        '200':
+          description: File information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: "{{ workspace_config.get('project_name', 'Agent Design Project') }}"
+                  role:
+                    type: string
+                    example: "{{ workspace_config.get('user_role', 'editor') }}"
+                  lastModified:
+                    type: string
+                    format: date-time
+                    example: "{{ timestamp }}"
+                  thumbnailUrl:
+                    type: string
+                    example: "https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/{{ file_key }}.png"
+                  version:
+                    type: string
+                    example: "{{ workspace_config.get('version', '1234567890') }}"
+                  document:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "0:0"
+                      name:
+                        type: string
+                        example: "{{ workspace_config.get('document_name', 'Agent Document') }}"
+                      type:
+                        type: string
+                        example: "DOCUMENT"
+                      children:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: "1:2"
+                            name:
+                              type: string
+                              example: "{{ workspace_config.get('page_name', 'Agent Page') }}"
+                            type:
+                              type: string
+                              example: "CANVAS"
+        '404':
+          description: File not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    example: 404
+                  err:
+                    type: string
+                    example: "File not found"
+
+  /files/{file_key}/comments:
+    get:
+      summary: Get comments on a file
+      operationId: getComments
+      security:
+        - figmaToken: []
+      parameters:
+        - name: file_key
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "ABC123DEF456"
+      responses:
+        '200':
+          description: Comments list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "comment_123"
+                        message:
+                          type: string
+                          example: "{{ workspace_config.get('default_comment', 'Agent feedback: Looks good!') }}"
+                        user:
+                          type: object
+                          properties:
+                            handle:
+                              type: string
+                              example: "{{ workspace_config.get('reviewer_handle', 'design_reviewer') }}"
+                            img_url:
+                              type: string
+                              example: "https://avatar.figma.com/reviewer.png"
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: "{{ timestamp }}"
+    
+    post:
+      summary: Post a comment on a file
+      operationId: postComment
+      security:
+        - figmaToken: []
+      parameters:
+        - name: file_key
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "ABC123DEF456"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: "Agent feedback: Component looks good!"
+                client_meta:
+                  type: object
+                  properties:
+                    x:
+                      type: number
+                      example: 100
+                    y:
+                      type: number
+                      example: 200
+              required:
+                - message
+      responses:
+        '200':
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "comment_456"
+                  message:
+                    type: string
+                    example: "Agent feedback: Component looks good!"
+
+{% for endpoint in custom_endpoints %}
+  {{ endpoint.path }}:
+    {{ endpoint.method.lower() }}:
+      summary: {{ endpoint.summary }}
+      operationId: {{ endpoint.operationId }}
+      {% if endpoint.security %}
+      security:
+        - figmaToken: []
+      {% endif %}
+      responses:
+        '200':
+          description: {{ endpoint.description }}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  {{ endpoint.response | tojson }}
+{% endfor %}
+
+components:
+  securitySchemes:
+    figmaToken:
+      type: http
+      scheme: bearer
+      description: Figma personal access token

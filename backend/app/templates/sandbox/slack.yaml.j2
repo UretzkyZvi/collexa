@@ -1,0 +1,228 @@
+openapi: 3.0.3
+info:
+  title: Slack Web API (Dynamic Sandbox)
+  description: Customizable Slack API mock for agent sandbox {{ sandbox_id }}
+  version: 1.0.0
+  contact:
+    name: Collexa Dynamic Sandbox
+    url: https://github.com/UretzkyZvi/collexa
+servers:
+  - url: /
+    description: Slack Web API (mocked)
+paths:
+  /auth.test:
+    post:
+      summary: Test authentication
+      operationId: authTest
+      security:
+        - slackToken: []
+      responses:
+        '200':
+          description: Authentication test result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  url:
+                    type: string
+                    example: "https://{{ workspace_config.get('team_domain', 'collexa-workspace') }}.slack.com/"
+                  team:
+                    type: string
+                    example: "{{ workspace_config.get('team_name', 'Collexa Workspace') }}"
+                  user:
+                    type: string
+                    example: "{{ custom_responses.get('/auth.test', {}).get('user', 'collexa_agent') }}"
+                  team_id:
+                    type: string
+                    example: "{{ workspace_config.get('team_id', 'T1234567890') }}"
+                  user_id:
+                    type: string
+                    example: "{{ custom_responses.get('/auth.test', {}).get('user_id', 'U1234567890') }}"
+                  bot_id:
+                    type: string
+                    example: "{{ custom_responses.get('/auth.test', {}).get('bot_id', 'B1234567890') }}"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "invalid_auth"
+
+  /chat.postMessage:
+    post:
+      summary: Send a message to a channel
+      operationId: chatPostMessage
+      security:
+        - slackToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                channel:
+                  type: string
+                  example: "#{{ workspace_config.get('default_channel', 'general') }}"
+                  description: Channel, private group, or IM channel to send message to
+                text:
+                  type: string
+                  example: "Hello from Collexa Agent!"
+                  description: Text of the message to send
+                blocks:
+                  type: array
+                  description: Structured blocks for rich formatting
+                  items:
+                    type: object
+                thread_ts:
+                  type: string
+                  description: Timestamp of parent message to reply to
+                username:
+                  type: string
+                  example: "{{ workspace_config.get('bot_name', 'Collexa Agent') }}"
+                  description: Bot username
+                icon_emoji:
+                  type: string
+                  example: ":robot_face:"
+                  description: Emoji to use as the icon
+              required:
+                - channel
+                - text
+      responses:
+        '200':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  channel:
+                    type: string
+                    example: "{{ workspace_config.get('default_channel_id', 'C1234567890') }}"
+                  ts:
+                    type: string
+                    example: "1692441600.123456"
+                  message:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        example: "message"
+                      subtype:
+                        type: string
+                        example: "bot_message"
+                      text:
+                        type: string
+                        example: "Hello from Collexa Agent!"
+                      ts:
+                        type: string
+                        example: "1692441600.123456"
+                      username:
+                        type: string
+                        example: "{{ workspace_config.get('bot_name', 'Collexa Agent') }}"
+                      bot_id:
+                        type: string
+                        example: "{{ custom_responses.get('/auth.test', {}).get('bot_id', 'B1234567890') }}"
+
+  /channels.list:
+    get:
+      summary: List public channels
+      operationId: channelsList
+      security:
+        - slackToken: []
+      parameters:
+        - name: exclude_archived
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: List of channels
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  channels:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "{{ workspace_config.get('default_channel_id', 'C1234567890') }}"
+                        name:
+                          type: string
+                          example: "{{ workspace_config.get('default_channel', 'general') }}"
+                        is_channel:
+                          type: boolean
+                          example: true
+                        is_member:
+                          type: boolean
+                          example: true
+                        topic:
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                              example: "{{ workspace_config.get('channel_topic', 'Agent testing and collaboration') }}"
+                        purpose:
+                          type: object
+                          properties:
+                            value:
+                              type: string
+                              example: "{{ workspace_config.get('channel_purpose', 'Channel for agent communication and testing') }}"
+                        num_members:
+                          type: integer
+                          example: {{ workspace_config.get('channel_members', 5) }}
+
+{% for endpoint in custom_endpoints %}
+  {{ endpoint.path }}:
+    {{ endpoint.method.lower() }}:
+      summary: {{ endpoint.summary }}
+      operationId: {{ endpoint.operationId }}
+      {% if endpoint.security %}
+      security:
+        - slackToken: []
+      {% endif %}
+      responses:
+        '200':
+          description: {{ endpoint.description }}
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  {{ endpoint.response | tojson }}
+{% endfor %}
+
+components:
+  securitySchemes:
+    slackToken:
+      type: http
+      scheme: bearer
+      description: Slack Bot User OAuth Token

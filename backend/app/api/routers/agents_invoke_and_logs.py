@@ -12,6 +12,8 @@ from app.db import models
 from app.streams import queue_for_agent, queue_for_run
 from app.observability.metrics import increment_agent_invocations, record_agent_invocation_duration
 from app.observability.logging import log_agent_invocation, get_structured_logger, set_request_context
+from app.services.usage_orchestrator import UsageOrchestrator
+from app.services.budget.budget_enforcement_service import BudgetExceededException
 
 logger = get_structured_logger("agents_invoke")
 
@@ -28,6 +30,33 @@ async def invoke_agent(
     start_time = time.time()
     org_id = auth.get("org_id")
     capability = payload.get("capability", "unknown")
+
+    # Check budget before processing
+    usage_orchestrator = UsageOrchestrator(db)
+    try:
+        # Estimate cost for this invocation (basic invocation + estimated tokens)
+        estimated_input_tokens = len(str(payload)) // 4  # Rough estimate: 4 chars per token
+        estimated_output_tokens = 100  # Conservative estimate
+
+        # This will raise BudgetExceededException if budget would be exceeded
+        usage_orchestrator.check_budget_before_invocation(
+            org_id=org_id,
+            agent_id=agent_id,
+            estimated_input_tokens=estimated_input_tokens,
+            estimated_output_tokens=estimated_output_tokens
+        )
+    except BudgetExceededException as e:
+        logger.warning(f"Budget exceeded for org {org_id}, agent {agent_id}: {e}")
+        raise HTTPException(
+            status_code=402,  # Payment Required
+            detail={
+                "error": "budget_exceeded",
+                "message": f"Budget limit exceeded. Current usage would exceed limit.",
+                "budget_id": e.budget_id,
+                "limit_cents": e.limit_cents,
+                "current_usage_cents": e.current_usage_cents
+            }
+        )
 
     # Set observability context (request_id should be set by middleware)
     # set_request_context(getattr(request.state, "request_id", ""), org_id, agent_id)
@@ -77,6 +106,29 @@ async def invoke_agent(
     db.commit()
     await agent_q.put(complete_msg)
     await run_q.put(complete_msg)
+
+    # Record actual usage for billing
+    try:
+        # Calculate actual token usage (simplified for demo)
+        actual_input_tokens = len(str(payload)) // 4
+        actual_output_tokens = len(str(result)) // 4
+
+        await usage_orchestrator.record_agent_invocation(
+            org_id=org_id,
+            agent_id=agent_id,
+            run_id=run_id,
+            input_tokens=actual_input_tokens,
+            output_tokens=actual_output_tokens,
+            metadata={
+                "capability": capability,
+                "duration_ms": (time.time() - start_time) * 1000,
+                "status": "succeeded"
+            }
+        )
+        logger.info(f"Recorded usage for invocation {run_id}: {actual_input_tokens} input, {actual_output_tokens} output tokens")
+    except Exception as e:
+        # Don't fail the request if usage recording fails
+        logger.error(f"Failed to record usage for invocation {run_id}: {e}")
 
     # Record observability metrics
     duration_ms = (time.time() - start_time) * 1000

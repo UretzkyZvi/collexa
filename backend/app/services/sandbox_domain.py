@@ -9,11 +9,24 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.db import models
-from app.services.sandbox_orchestrator import (
-    orchestrator,
-    SandboxRequest,
-    ServiceConfig,
-)
+# Lazy import to avoid importing heavy docker client in environments (like CI) that don't need it at import time.
+# Tests patch SandboxDomainService methods; importing orchestrator only when methods run prevents ModuleNotFoundError: docker.
+orchestrator = None  # type: ignore[assignment]
+SandboxRequest = None  # type: ignore[assignment]
+ServiceConfig = None  # type: ignore[assignment]
+
+def _ensure_orchestrator_loaded():
+    global orchestrator, SandboxRequest, ServiceConfig
+    if orchestrator is None:
+        from app.services.sandbox_orchestrator import (
+            orchestrator as _orch,
+            SandboxRequest as _SandboxRequest,
+            ServiceConfig as _ServiceConfig,
+        )
+
+        orchestrator = _orch
+        SandboxRequest = _SandboxRequest
+        ServiceConfig = _ServiceConfig
 from app.schemas.sandbox import (
     CreateSandboxRequest,
     UpdateSandboxRequest,
@@ -47,8 +60,9 @@ class SandboxDomainService:
         orchestrator_request = self._convert_to_orchestrator_request(request)
 
         # Create sandbox using orchestrator
+        _ensure_orchestrator_loaded()
         try:
-            sandbox_info = await orchestrator.create_sandbox(
+            sandbox_info = await orchestrator.create_sandbox(  # type: ignore[union-attr]
                 agent_id, orchestrator_request
             )
         except Exception as e:
@@ -66,7 +80,8 @@ class SandboxDomainService:
         agent = self._get_agent_or_raise(agent_id, org_id)
 
         # Get sandbox from orchestrator
-        sandbox_info = await orchestrator.get_sandbox(sandbox_id)
+        _ensure_orchestrator_loaded()
+        sandbox_info = await orchestrator.get_sandbox(sandbox_id)  # type: ignore[union-attr]
         if not sandbox_info or sandbox_info.agent_id != agent_id:
             raise Exception("Sandbox not found")
 
@@ -80,7 +95,8 @@ class SandboxDomainService:
         agent = self._get_agent_or_raise(agent_id, org_id)
 
         # Get all active sandboxes and filter by agent
-        all_sandboxes = orchestrator.get_active_sandboxes()
+        _ensure_orchestrator_loaded()
+        all_sandboxes = orchestrator.get_active_sandboxes()  # type: ignore[union-attr]
         agent_sandboxes = [
             self._convert_to_response(sandbox_info)
             for sandbox_info in all_sandboxes.values()
@@ -118,8 +134,9 @@ class SandboxDomainService:
                 )
 
         # Update sandbox using orchestrator
+        _ensure_orchestrator_loaded()
         try:
-            updated_sandbox = await orchestrator.update_sandbox(
+            updated_sandbox = await orchestrator.update_sandbox(  # type: ignore[union-attr]
                 sandbox_id, add_services=add_services, update_configs=update_configs
             )
         except Exception as e:
@@ -142,7 +159,8 @@ class SandboxDomainService:
             raise Exception("Sandbox not found")
 
         # Delete sandbox using orchestrator
-        success = await orchestrator.delete_sandbox(sandbox_id)
+        _ensure_orchestrator_loaded()
+        success = await orchestrator.delete_sandbox(sandbox_id)  # type: ignore[union-attr]
         if not success:
             raise Exception("Failed to delete sandbox")
 
@@ -170,8 +188,9 @@ class SandboxDomainService:
 
     def _convert_to_orchestrator_request(
         self, request: CreateSandboxRequest
-    ) -> SandboxRequest:
+    ):
         """Convert API request schema to orchestrator request."""
+        _ensure_orchestrator_loaded()
         custom_configs = {}
 
         for service_type, config_schema in request.custom_configs.items():

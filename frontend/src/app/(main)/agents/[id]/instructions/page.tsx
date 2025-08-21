@@ -31,7 +31,7 @@ export default function InstructionsPage() {
       setData(await res.json());
     })();
     // authFetch and router are stable hooks; effect only depends on id
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [id]);
 
   const host = useMemo(() => (typeof window !== "undefined" ? window.location.host : "<host>"), []);

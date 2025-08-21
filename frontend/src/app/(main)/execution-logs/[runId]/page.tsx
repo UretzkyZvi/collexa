@@ -9,7 +9,7 @@ import { Button } from "~/components/ui/button";
 export default function RunDetailsPage() {
   const { runId } = useParams<{ runId: string }>();
   const authFetch = useAuthFetch();
-  const [run, setRun] = useState<any | null>(null);
+  const [_run, setRun] = useState<any | null>(null);
   const [replaying, setReplaying] = useState(false);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ export default function RunDetailsPage() {
       const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/runs/${runId}/replay`, { method: "POST" });
       if (!res.ok) throw new Error("Replay not available");
       // Optional: navigate to the new run id or show a toast
-    } catch (e) {
+    } catch (_e) {
       // Placeholder behavior for now
       console.warn("Replay endpoint not available yet.");
     } finally {

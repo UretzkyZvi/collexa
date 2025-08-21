@@ -66,7 +66,7 @@ export default function LogsPage() {
     setDateFrom(f);
     setDateTo(t);
     void refreshRuns();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   // Fetch agents for Agent Select

@@ -40,7 +40,9 @@ export default function PlaygroundPage() {
         if (msg?.type === "complete") {
           setFinalResult(msg.output ?? msg);
         }
-      } catch {}
+      } catch {
+        // Ignore parsing errors
+      }
     };
     es.onerror = () => es.close();
     evtSrcRef.current = es;

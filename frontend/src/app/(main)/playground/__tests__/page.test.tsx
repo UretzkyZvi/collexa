@@ -48,7 +48,7 @@ describe("PlaygroundPage", () => {
     expect(init.method).toBe("POST");
 
     // Validate EventSource URL contains token and team
-    const esUrl = (global.EventSource as any).mock?.calls?.[0]?.[0] || (global as any).__lastESUrl;
+    const _esUrl = (global.EventSource as any).mock?.calls?.[0]?.[0] || (global as any).__lastESUrl;
     // Our MockEventSource stores the last provided URL in instance; we can’t easily access it here.
     // Instead, we rely on no exceptions and our onmessage having fired.
   });

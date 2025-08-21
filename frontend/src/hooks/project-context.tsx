@@ -25,20 +25,26 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       setProjects(parsed);
       const sel = localStorage.getItem("collexa_selected_project_id");
       setSelectedProjectId(sel || null);
-    } catch {}
+    } catch {
+      // Ignore errors when loading projects
+    }
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem("collexa_projects", JSON.stringify(projects));
-    } catch {}
+    } catch {
+      // Ignore errors when creating project
+    }
   }, [projects]);
 
   useEffect(() => {
     try {
       if (selectedProjectId) localStorage.setItem("collexa_selected_project_id", selectedProjectId);
       else localStorage.removeItem("collexa_selected_project_id");
-    } catch {}
+    } catch {
+      // Ignore errors when switching project
+    }
   }, [selectedProjectId]);
 
   const addProject = (name: string) => {

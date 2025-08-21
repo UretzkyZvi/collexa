@@ -44,3 +44,27 @@ def mock_db():
     mock.first.return_value = None
     mock.count.return_value = 0
     return mock
+
+
+@pytest.fixture(autouse=True)
+def override_get_db_when_mock_requested(request):
+    """If a test requests the 'mock_db' fixture, override FastAPI get_db dependency
+    to use that mock for the duration of the test.
+    """
+    if "mock_db" in request.fixturenames:
+        from app.main import app
+        from app.api.deps import get_db
+
+        mock_db = request.getfixturevalue("mock_db")
+
+        def _get_mock_db():
+            return mock_db
+
+        app.dependency_overrides[get_db] = _get_mock_db
+        try:
+            yield
+        finally:
+            app.dependency_overrides.pop(get_db, None)
+    else:
+        # No-op for tests that don't use mock_db
+        yield

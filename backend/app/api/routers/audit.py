@@ -23,15 +23,15 @@ async def list_audit_logs(
         .filter(models.AuditLog.org_id == auth.get("org_id"))
         .order_by(models.AuditLog.created_at.desc())
     )
-    
+
     if agent_id:
         query = query.filter(models.AuditLog.agent_id == agent_id)
-    
+
     if endpoint:
         query = query.filter(models.AuditLog.endpoint.ilike(f"%{endpoint}%"))
-    
+
     rows = query.offset(offset).limit(limit).all()
-    
+
     return {
         "logs": [
             {

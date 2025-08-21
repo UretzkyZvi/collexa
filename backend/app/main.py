@@ -19,11 +19,7 @@ from app.middleware.audit_middleware import AuditMiddleware
 from app.middleware.policy_middleware import PolicyEnforcementMiddleware
 from app.mcp import router as mcp_router
 
-app = FastAPI(
-    title="Collexa API",
-    version="0.1.0",
-    lifespan=lifespan
-)
+app = FastAPI(title="Collexa API", version="0.1.0", lifespan=lifespan)
 
 # CORS: adjust allowed origins for your UI host(s)
 app.add_middleware(

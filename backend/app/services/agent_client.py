@@ -2,7 +2,9 @@ from typing import Any, Dict, Optional
 import os
 from app.services.http_client import get_http_client
 
-API_BASE = os.getenv("INTERNAL_API_BASE_URL", os.getenv("API_BASE_URL", "http://localhost:8000")).rstrip("/")
+API_BASE = os.getenv(
+    "INTERNAL_API_BASE_URL", os.getenv("API_BASE_URL", "http://localhost:8000")
+).rstrip("/")
 
 
 async def invoke_agent_http(
@@ -27,4 +29,3 @@ async def invoke_agent_http(
     resp = await client.post(url, json=payload, headers=headers)
     resp.raise_for_status()
     return resp.json()
-

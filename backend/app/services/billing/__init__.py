@@ -12,7 +12,7 @@ from .webhook_service import WebhookService
 
 __all__ = [
     "CustomerService",
-    "SubscriptionService", 
+    "SubscriptionService",
     "CheckoutService",
-    "WebhookService"
+    "WebhookService",
 ]

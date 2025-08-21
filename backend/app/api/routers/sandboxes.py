@@ -15,7 +15,7 @@ from app.schemas.sandbox import (
     UpdateSandboxRequest,
     SandboxResponse,
     SandboxListResponse,
-    DeleteSandboxResponse
+    DeleteSandboxResponse,
 )
 
 router = APIRouter()
@@ -30,7 +30,7 @@ async def create_sandbox(
 ) -> SandboxResponse:
     """Create a new dynamic sandbox for an agent."""
     org_id = auth.get("org_id")
-    
+
     try:
         service = SandboxDomainService(db)
         return await service.create_sandbox(agent_id, org_id, request)
@@ -47,7 +47,7 @@ async def get_sandbox(
 ) -> SandboxResponse:
     """Get information about a specific sandbox."""
     org_id = auth.get("org_id")
-    
+
     try:
         service = SandboxDomainService(db)
         return await service.get_sandbox(agent_id, org_id, sandbox_id)
@@ -63,7 +63,7 @@ async def list_sandboxes(
 ) -> SandboxListResponse:
     """List all sandboxes for an agent."""
     org_id = auth.get("org_id")
-    
+
     try:
         service = SandboxDomainService(db)
         return await service.list_sandboxes(agent_id, org_id)
@@ -71,7 +71,9 @@ async def list_sandboxes(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.patch("/agents/{agent_id}/sandboxes/{sandbox_id}", response_model=SandboxResponse)
+@router.patch(
+    "/agents/{agent_id}/sandboxes/{sandbox_id}", response_model=SandboxResponse
+)
 async def update_sandbox(
     agent_id: str,
     sandbox_id: str,
@@ -81,7 +83,7 @@ async def update_sandbox(
 ) -> SandboxResponse:
     """Update a sandbox by adding services or updating configurations."""
     org_id = auth.get("org_id")
-    
+
     try:
         service = SandboxDomainService(db)
         return await service.update_sandbox(agent_id, org_id, sandbox_id, request)
@@ -89,7 +91,9 @@ async def update_sandbox(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete("/agents/{agent_id}/sandboxes/{sandbox_id}", response_model=DeleteSandboxResponse)
+@router.delete(
+    "/agents/{agent_id}/sandboxes/{sandbox_id}", response_model=DeleteSandboxResponse
+)
 async def delete_sandbox(
     agent_id: str,
     sandbox_id: str,
@@ -98,7 +102,7 @@ async def delete_sandbox(
 ) -> DeleteSandboxResponse:
     """Delete a sandbox and cleanup all its resources."""
     org_id = auth.get("org_id")
-    
+
     try:
         service = SandboxDomainService(db)
         return await service.delete_sandbox(agent_id, org_id, sandbox_id)

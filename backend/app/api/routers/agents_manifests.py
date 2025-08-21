@@ -54,7 +54,12 @@ async def create_agent_manifest(
 
     if not jws or not priv_pem:
         # Allow running without crypto libs/keys in dev; return unsigned manifest
-        result = {"manifest": manifest, "signature": None, "key_id": key_id, "alg": None}
+        result = {
+            "manifest": manifest,
+            "signature": None,
+            "key_id": key_id,
+            "alg": None,
+        }
     else:
         headers = {"alg": "ES256", "kid": key_id, "typ": "JWT"}
         try:
@@ -67,7 +72,12 @@ async def create_agent_manifest(
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Signing failed: {e}")
 
-        result = {"manifest": manifest, "signature": signature, "key_id": key_id, "alg": "ES256"}
+        result = {
+            "manifest": manifest,
+            "signature": signature,
+            "key_id": key_id,
+            "alg": "ES256",
+        }
 
     # Persist (best-effort; table may not exist yet in dev)
     try:
@@ -96,7 +106,6 @@ async def get_jwks():
         # Return empty set to avoid leaking dev keys; clients should handle absence.
         return {"keys": []}
     return jwks
-
 
 
 @router.post("/agents/{agent_id}/manifests/verify")
@@ -134,10 +143,13 @@ async def verify_agent_manifest(
             exp = payload.get("expect") or {}
             if exp:
                 import json as _json
+
                 data = _json.loads(payload_json)
                 for field, value in exp.items():
                     if data.get(field) != value:
-                        raise HTTPException(status_code=400, detail=f"Mismatch on field '{field}'")
+                        raise HTTPException(
+                            status_code=400, detail=f"Mismatch on field '{field}'"
+                        )
             return {"valid": True}
         except Exception as e:  # try next key
             last_err = str(e)

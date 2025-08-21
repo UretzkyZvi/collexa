@@ -72,7 +72,9 @@ async def create_sandbox(
 
     target_system: Optional[str] = payload.get("target_system")
     if not target_system:
-        raise HTTPException(status_code=422, detail="target_system is required for mock mode")
+        raise HTTPException(
+            status_code=422, detail="target_system is required for mock mode"
+        )
 
     # Build response using SandboxService defaults (tests patch these methods)
     svc = SandboxService()
@@ -352,4 +354,7 @@ async def list_sandbox_runs(
         for r in runs_q
     ]
 
-    return {"runs": runs, "pagination": {"limit": limit, "offset": offset, "total": total}}
+    return {
+        "runs": runs,
+        "pagination": {"limit": limit, "offset": offset, "total": total},
+    }

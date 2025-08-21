@@ -13,12 +13,12 @@ def test_metrics_collection(monkeypatch):
     from app.security import stack_auth
 
     monkeypatch.setattr(
-        stack_auth, "verify_stack_access_token", 
-        lambda t: {"id": "user1", "selectedTeamId": "org1"}
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "user1", "selectedTeamId": "org1"},
     )
     monkeypatch.setattr(
-        stack_auth, "verify_team_membership", 
-        lambda team, tok: {"id": team}
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
     )
 
     # Clear metrics
@@ -37,7 +37,9 @@ def test_metrics_collection(monkeypatch):
     api_calls = metrics.get_counter("api_calls_total", {"org_id": "org1"})
     assert api_calls >= 1
 
-    duration_stats = metrics.get_histogram_stats("request_duration_ms", {"org_id": "org1"})
+    duration_stats = metrics.get_histogram_stats(
+        "request_duration_ms", {"org_id": "org1"}
+    )
     assert duration_stats["count"] >= 1
     assert duration_stats["avg"] > 0
 
@@ -47,12 +49,12 @@ def test_metrics_endpoint(monkeypatch):
     from app.security import stack_auth
 
     monkeypatch.setattr(
-        stack_auth, "verify_stack_access_token", 
-        lambda t: {"id": "user1", "selectedTeamId": "org1"}
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "user1", "selectedTeamId": "org1"},
     )
     monkeypatch.setattr(
-        stack_auth, "verify_team_membership", 
-        lambda team, tok: {"id": team}
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
     )
 
     # Make some API calls first
@@ -69,12 +71,12 @@ def test_metrics_endpoint(monkeypatch):
     )
     assert r.status_code == 200
     data = r.json()
-    
+
     assert "org_id" in data
     assert "api_calls" in data
     assert "request_duration_ms" in data
     assert "agent_invocations" in data
-    
+
     assert data["api_calls"]["total"] >= 0
     assert "success_rate" in data["api_calls"]
 
@@ -82,13 +84,13 @@ def test_metrics_endpoint(monkeypatch):
 def test_structured_logging():
     """Test structured logging functionality."""
     logger = get_structured_logger("test")
-    
+
     # Set context
     set_request_context("req-123", "org1", "agent-456")
-    
+
     # This would normally output JSON logs
     logger.info("Test message", extra={"test_field": "test_value"})
-    
+
     # Test passes if no exceptions are raised
 
 
@@ -96,16 +98,16 @@ def test_tracing_functionality():
     """Test basic tracing functionality."""
     # Clear previous spans
     tracer.spans.clear()
-    
+
     # Start a span
     span = start_span("test_operation", operation="test", user_id="user1")
     span.set_attribute("test_attr", "test_value")
     span.finish()
-    
+
     # Check span was recorded
     spans = tracer.get_spans()
     assert len(spans) >= 1
-    
+
     test_span = spans[-1]  # Get the last span
     assert test_span.name == "test_operation"
     assert test_span.attributes["operation"] == "test"
@@ -119,12 +121,12 @@ def test_agent_invocation_observability(monkeypatch):
     from app.security import stack_auth
 
     monkeypatch.setattr(
-        stack_auth, "verify_stack_access_token", 
-        lambda t: {"id": "user1", "selectedTeamId": "org1"}
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "user1", "selectedTeamId": "org1"},
     )
     monkeypatch.setattr(
-        stack_auth, "verify_team_membership", 
-        lambda team, tok: {"id": team}
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
     )
 
     # Clear metrics
@@ -148,10 +150,14 @@ def test_agent_invocation_observability(monkeypatch):
     assert r2.status_code == 200
 
     # Check invocation metrics
-    invocation_count = metrics.get_counter("agent_invocations_total", {"org_id": "org1"})
+    invocation_count = metrics.get_counter(
+        "agent_invocations_total", {"org_id": "org1"}
+    )
     assert invocation_count >= 1
 
-    invocation_duration = metrics.get_histogram_stats("agent_invocation_duration_ms", {"org_id": "org1"})
+    invocation_duration = metrics.get_histogram_stats(
+        "agent_invocation_duration_ms", {"org_id": "org1"}
+    )
     assert invocation_duration["count"] >= 1
     assert invocation_duration["avg"] > 0
 
@@ -161,12 +167,12 @@ def test_request_id_in_response_headers(monkeypatch):
     from app.security import stack_auth
 
     monkeypatch.setattr(
-        stack_auth, "verify_stack_access_token", 
-        lambda t: {"id": "user1", "selectedTeamId": "org1"}
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "user1", "selectedTeamId": "org1"},
     )
     monkeypatch.setattr(
-        stack_auth, "verify_team_membership", 
-        lambda team, tok: {"id": team}
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
     )
 
     r = client.post(
@@ -174,7 +180,7 @@ def test_request_id_in_response_headers(monkeypatch):
         json={"brief": "request id test"},
         headers={"Authorization": "Bearer user1-token", "X-Team-Id": "org1"},
     )
-    
+
     assert r.status_code == 200
     assert "X-Request-ID" in r.headers
     assert len(r.headers["X-Request-ID"]) > 0

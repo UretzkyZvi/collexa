@@ -1,7 +1,14 @@
 import os
 from typing import Any, Dict
-import requests
 from fastapi import HTTPException
+
+try:
+    import requests  # type: ignore[import-untyped]
+except Exception:  # pragma: no cover - mypy stub fallback
+    import types
+
+    requests = types.SimpleNamespace(get=None)  # type: ignore[assignment]
+
 
 STACK_API_BASE = os.getenv("STACK_API_BASE", "https://api.stack-auth.com/api/v1")
 STACK_PROJECT_ID = os.getenv("STACK_PROJECT_ID", "")
@@ -47,7 +54,9 @@ def verify_team_membership(team_id: str, access_token: str) -> Dict[str, Any]:
         try:
             data = r.json()
             if isinstance(data, dict) and data.get("message"):
-                detail = data.get("message")
+                msg = data.get("message")
+                if isinstance(msg, str):
+                    detail = msg
         except Exception:
             pass
         raise HTTPException(status_code=403, detail=detail)

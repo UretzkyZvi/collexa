@@ -12,6 +12,7 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def patch_dependencies(monkeypatch):
     """Mock Stack Auth and database for all tests."""
+
     def fake_verify_token(token: str):
         if token == "fake-token":  # Note: without "Bearer " prefix
             return {"id": "test-user", "selectedTeamId": "test-org"}
@@ -34,9 +35,7 @@ def patch_dependencies(monkeypatch):
     monkeypatch.setattr(
         "app.security.stack_auth.verify_team_membership", fake_verify_team
     )
-    monkeypatch.setattr(
-        "app.db.session.set_rls_for_session", fake_set_rls
-    )
+    monkeypatch.setattr("app.db.session.set_rls_for_session", fake_set_rls)
 
 
 def test_create_sandbox_requires_auth():
@@ -49,7 +48,9 @@ def test_create_sandbox_mock_mode():
     """Test creating a sandbox in mock mode."""
     # Create mock database
     mock_db = MagicMock()
-    mock_agent = models.Agent(id="test-agent", org_id="test-org", display_name="Test agent")
+    mock_agent = models.Agent(
+        id="test-agent", org_id="test-org", display_name="Test agent"
+    )
     mock_db.query.return_value.filter.return_value.first.return_value = mock_agent
 
     # Override dependencies
@@ -60,8 +61,11 @@ def test_create_sandbox_mock_mode():
 
     try:
         # Mock sandbox service methods
-        with patch('app.services.sandbox_service.SandboxService._get_default_mock_endpoints') as mock_endpoints, \
-             patch('app.services.sandbox_service.SandboxService.start_sandbox') as mock_start:
+        with patch(
+            "app.services.sandbox_service.SandboxService._get_default_mock_endpoints"
+        ) as mock_endpoints, patch(
+            "app.services.sandbox_service.SandboxService.start_sandbox"
+        ) as mock_start:
 
             mock_endpoints.return_value = {
                 "base_url": "http://localhost:4000/sandbox/{sandbox_id}/figma",
@@ -69,8 +73,11 @@ def test_create_sandbox_mock_mode():
                 "spec_file": "sandbox-specs/figma/figma-api.yaml",
                 "endpoints": {
                     "/me": {"method": "GET", "description": "Get current user info"},
-                    "/files/{file_key}": {"method": "GET", "description": "Get file information"},
-                }
+                    "/files/{file_key}": {
+                        "method": "GET",
+                        "description": "Get file information",
+                    },
+                },
             }
             mock_start.return_value = None  # Async method returns None
 
@@ -79,9 +86,9 @@ def test_create_sandbox_mock_mode():
                 json={
                     "mode": "mock",
                     "target_system": "figma",
-                    "config": {"api_version": "v1"}
+                    "config": {"api_version": "v1"},
                 },
-                headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+                headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"},
             )
 
         assert response.status_code == 200
@@ -90,7 +97,9 @@ def test_create_sandbox_mock_mode():
         assert data["target_system"] == "figma"
         assert "sandbox_id" in data
         assert "endpoints" in data
-        assert data["endpoints"]["mock_api"].startswith("http://localhost:4000/sandbox/")
+        assert data["endpoints"]["mock_api"].startswith(
+            "http://localhost:4000/sandbox/"
+        )
         assert data["endpoints"]["mock_api"].endswith("/figma")
         assert "prism_direct" in data["endpoints"]
         assert data["endpoints"]["prism_direct"] == "http://localhost:4010"
@@ -105,15 +114,17 @@ def test_create_sandbox_mock_mode():
 def test_create_sandbox_unsupported_mode(mock_auth, mock_db):
     """Test that unsupported modes are rejected."""
     # Mock agent exists
-    mock_agent = models.Agent(id="test-agent", org_id="test-org", display_name="Test agent")
+    mock_agent = models.Agent(
+        id="test-agent", org_id="test-org", display_name="Test agent"
+    )
     mock_db.query.return_value.filter.return_value.first.return_value = mock_agent
-    
+
     response = client.post(
         "/v1/agents/test-agent/sandboxes",
         json={"mode": "connected"},  # Not supported in N.1
-        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"},
     )
-    
+
     assert response.status_code == 400
     assert "Only mock mode is supported" in response.json()["detail"]
 
@@ -122,13 +133,13 @@ def test_create_sandbox_agent_not_found(mock_auth, mock_db):
     """Test creating sandbox for non-existent agent."""
     # Mock agent not found
     mock_db.query.return_value.filter.return_value.first.return_value = None
-    
+
     response = client.post(
         "/v1/agents/nonexistent/sandboxes",
         json={"mode": "mock"},
-        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"},
     )
-    
+
     assert response.status_code == 404
     assert "Agent not found" in response.json()["detail"]
 
@@ -136,9 +147,11 @@ def test_create_sandbox_agent_not_found(mock_auth, mock_db):
 def test_list_sandboxes(mock_auth, mock_db):
     """Test listing sandboxes for an agent."""
     # Mock agent exists
-    mock_agent = models.Agent(id="test-agent", org_id="test-org", display_name="Test agent")
+    mock_agent = models.Agent(
+        id="test-agent", org_id="test-org", display_name="Test agent"
+    )
     mock_db.query.return_value.filter.return_value.first.return_value = mock_agent
-    
+
     # Mock sandboxes
     mock_sandbox = models.Sandbox(
         id="sandbox-1",
@@ -146,15 +159,17 @@ def test_list_sandboxes(mock_auth, mock_db):
         org_id="test-org",
         mode="mock",
         target_system="figma",
-        status="running"
+        status="running",
     )
-    mock_db.query.return_value.filter.return_value.order_by.return_value.all.return_value = [mock_sandbox]
-    
+    mock_db.query.return_value.filter.return_value.order_by.return_value.all.return_value = [
+        mock_sandbox
+    ]
+
     response = client.get(
         "/v1/agents/test-agent/sandboxes",
-        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"},
     )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert "sandboxes" in data
@@ -173,25 +188,27 @@ def test_get_sandbox_details(mock_auth, mock_db):
         mode="mock",
         target_system="figma",
         status="running",
-        config_json={"api_version": "v1"}
+        config_json={"api_version": "v1"},
     )
     mock_db.query.return_value.filter.return_value.first.return_value = mock_sandbox
-    
+
     # Mock recent runs
     mock_run = models.SandboxRun(
         id="run-1",
         sandbox_id="sandbox-1",
         phase="learn",
         task_name="explore_endpoints",
-        status="completed"
+        status="completed",
     )
-    mock_db.query.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = [mock_run]
-    
+    mock_db.query.return_value.filter.return_value.order_by.return_value.limit.return_value.all.return_value = [
+        mock_run
+    ]
+
     response = client.get(
         "/v1/agents/test-agent/sandboxes/sandbox-1",
-        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"},
     )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["sandbox_id"] == "sandbox-1"
@@ -211,20 +228,20 @@ def test_reset_sandbox(mock_auth, mock_db):
         agent_id="test-agent",
         org_id="test-org",
         mode="mock",
-        status="running"
+        status="running",
     )
     mock_db.query.return_value.filter.return_value.first.return_value = mock_sandbox
-    
+
     # Mock sandbox service
-    with patch('app.api.routers.sandboxes.SandboxService') as mock_service:
+    with patch("app.api.routers.sandboxes.SandboxService") as mock_service:
         mock_service_instance = AsyncMock()
         mock_service.return_value = mock_service_instance
-        
+
         response = client.post(
             "/v1/agents/test-agent/sandboxes/sandbox-1/reset",
-            headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+            headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"},
         )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Sandbox reset successfully"
@@ -240,20 +257,20 @@ def test_delete_sandbox(mock_auth, mock_db):
         agent_id="test-agent",
         org_id="test-org",
         mode="mock",
-        status="running"
+        status="running",
     )
     mock_db.query.return_value.filter.return_value.first.return_value = mock_sandbox
-    
+
     # Mock sandbox service
-    with patch('app.api.routers.sandboxes.SandboxService') as mock_service:
+    with patch("app.api.routers.sandboxes.SandboxService") as mock_service:
         mock_service_instance = AsyncMock()
         mock_service.return_value = mock_service_instance
-        
+
         response = client.delete(
             "/v1/agents/test-agent/sandboxes/sandbox-1",
-            headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+            headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"},
         )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["message"] == "Sandbox deleted successfully"
@@ -270,10 +287,10 @@ def test_list_sandbox_runs(mock_auth, mock_db):
         agent_id="test-agent",
         org_id="test-org",
         mode="mock",
-        status="running"
+        status="running",
     )
     mock_db.query.return_value.filter.return_value.first.return_value = mock_sandbox
-    
+
     # Mock runs
     mock_run = models.SandboxRun(
         id="run-1",
@@ -282,16 +299,18 @@ def test_list_sandbox_runs(mock_auth, mock_db):
         task_name="explore_endpoints",
         status="completed",
         input_json={"task": "explore"},
-        output_json={"endpoints_found": 5}
+        output_json={"endpoints_found": 5},
     )
-    mock_db.query.return_value.filter.return_value.order_by.return_value.offset.return_value.limit.return_value.all.return_value = [mock_run]
+    mock_db.query.return_value.filter.return_value.order_by.return_value.offset.return_value.limit.return_value.all.return_value = [
+        mock_run
+    ]
     mock_db.query.return_value.filter.return_value.count.return_value = 1
-    
+
     response = client.get(
         "/v1/agents/test-agent/sandboxes/sandbox-1/runs?limit=10&offset=0",
-        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"}
+        headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test-org"},
     )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert "runs" in data

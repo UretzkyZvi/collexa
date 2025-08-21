@@ -144,16 +144,17 @@ def test_rls_isolation_runs_and_logs(client, mock_stack_auth):
 def test_set_rls_for_session_direct():
     """Test the set_rls_for_session function directly."""
     from app.db.session import engine
-    
+
     with engine.connect() as conn:
         # Create a session manually
         from sqlalchemy.orm import sessionmaker
+
         Session = sessionmaker(bind=conn)
         db = Session()
-        
+
         # Set RLS context
         set_rls_for_session(db, "test-org-123")
-        
+
         # Verify the setting was applied (this will be a no-op on SQLite)
         try:
             result = db.execute("SELECT current_setting('app.org_id', true)")
@@ -163,5 +164,5 @@ def test_set_rls_for_session_direct():
         except Exception:
             # Expected on SQLite - RLS settings don't exist
             pass
-        
+
         db.close()

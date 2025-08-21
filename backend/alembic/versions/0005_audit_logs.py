@@ -4,6 +4,7 @@ Revision ID: 0005_audit_logs
 Revises: 0004_agent_keys
 Create Date: 2025-08-18
 """
+
 from alembic import op
 import sqlalchemy as sa
 
@@ -12,6 +13,7 @@ revision = "0005_audit_logs"
 down_revision = "0004_agent_keys"
 branch_labels = None
 depends_on = None
+
 
 def upgrade() -> None:
     op.create_table(
@@ -26,10 +28,16 @@ def upgrade() -> None:
         sa.Column("request_id", sa.String(length=64), nullable=True),
         sa.Column("ip_address", sa.String(length=45), nullable=True),
         sa.Column("user_agent", sa.Text, nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("CURRENT_TIMESTAMP")),
+        sa.Column(
+            "created_at",
+            sa.DateTime(timezone=True),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
+        ),
     )
     # Index for common queries
-    op.create_index("idx_audit_logs_org_created", "audit_logs", ["org_id", "created_at"])
+    op.create_index(
+        "idx_audit_logs_org_created", "audit_logs", ["org_id", "created_at"]
+    )
     op.create_index("idx_audit_logs_agent", "audit_logs", ["agent_id"])
 
 

@@ -6,7 +6,7 @@ import asyncio
 
 
 class OPAPolicyEngine:
-    def __init__(self, opa_url: str = None):
+    def __init__(self, opa_url: Optional[str] = None):
         self.opa_url = opa_url or os.getenv("OPA_URL", "http://localhost:8181")
         # Reuse shared pooled client for efficiency
         from app.services.http_client import get_http_client

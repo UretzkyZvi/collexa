@@ -18,9 +18,11 @@ from app.services.billing.async_webhook_service import celery_app
 
 if __name__ == "__main__":
     # Start Celery beat scheduler
-    celery_app.start([
-        'beat',
-        '--loglevel=info',
-        '--schedule=/tmp/celerybeat-schedule',
-        '--pidfile=/tmp/celerybeat.pid'
-    ])
+    celery_app.start(
+        [
+            "beat",
+            "--loglevel=info",
+            "--schedule=/tmp/celerybeat-schedule",
+            "--pidfile=/tmp/celerybeat.pid",
+        ]
+    )

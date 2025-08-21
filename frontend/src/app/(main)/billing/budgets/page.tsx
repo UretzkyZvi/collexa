@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Progress } from "~/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { /* Select, */ SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { useAuthFetch } from "~/lib/authFetch";
 import CreateBudgetDialog from "./CreateBudgetDialog";
 import { DollarSign, AlertTriangle, CheckCircle } from "lucide-react";
@@ -44,6 +44,7 @@ export default function BudgetsPage() {
   useEffect(() => {
     fetchBudgets();
     fetchUsageSummary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const authFetch = useAuthFetch();

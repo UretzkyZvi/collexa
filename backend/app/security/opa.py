@@ -12,7 +12,6 @@ class OPAPolicyEngine:
         from app.services.http_client import get_http_client
 
         self.client = get_http_client()
-
     async def close(self):
         """Close the HTTP client."""
         await self.client.aclose()

@@ -81,7 +81,6 @@ async def lifespan(app):
         # Close shared HTTP client
         await close_http_client()
         logger.info("HTTP client closed")
-
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")
 

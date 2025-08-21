@@ -135,7 +135,7 @@ export default function HomePage() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.agents_count || 0}</div>
+            <div className="text-2xl font-bold" data-testid="agents-count">{stats?.agents_count || 0}</div>
             <p className="text-xs text-muted-foreground">
               {stats?.agents_count === 0 ? "Create your first agent" : "Active agents"}
             </p>
@@ -159,7 +159,7 @@ export default function HomePage() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics?.api_calls?.total || 0}</div>
+            <div className="text-2xl font-bold" data-testid="api-calls-total">{metrics?.api_calls?.total || 0}</div>
             <p className="text-xs text-muted-foreground">
               {metrics?.api_calls?.errors || 0} errors
             </p>
@@ -183,7 +183,7 @@ export default function HomePage() {
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold" data-testid="success-rate">
               {metrics?.api_calls?.success_rate
                 ? `${(metrics.api_calls.success_rate * 100).toFixed(1)}%`
                 : "100%"

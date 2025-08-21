@@ -25,22 +25,33 @@ router = APIRouter()
 
 class CreateBudgetRequest(BaseModel):
     """Request model for creating a budget"""
-    agent_id: Optional[str] = Field(None, description="Agent ID (null for org-level budget)")
+
+    agent_id: Optional[str] = Field(
+        None, description="Agent ID (null for org-level budget)"
+    )
     period: str = Field(..., description="Budget period: daily, weekly, monthly")
     limit_cents: int = Field(..., gt=0, description="Budget limit in cents")
     enforcement_mode: str = Field("soft", description="Enforcement mode: soft or hard")
-    alerts_config: Optional[Dict[str, Any]] = Field(None, description="Alert configuration")
+    alerts_config: Optional[Dict[str, Any]] = Field(
+        None, description="Alert configuration"
+    )
 
 
 class UpdateBudgetRequest(BaseModel):
     """Request model for updating a budget"""
-    limit_cents: Optional[int] = Field(None, gt=0, description="New budget limit in cents")
+
+    limit_cents: Optional[int] = Field(
+        None, gt=0, description="New budget limit in cents"
+    )
     enforcement_mode: Optional[str] = Field(None, description="New enforcement mode")
-    alerts_config: Optional[Dict[str, Any]] = Field(None, description="New alert configuration")
+    alerts_config: Optional[Dict[str, Any]] = Field(
+        None, description="New alert configuration"
+    )
 
 
 class BudgetResponse(BaseModel):
     """Response model for budget information"""
+
     id: str
     org_id: str
     agent_id: Optional[str]
@@ -59,6 +70,7 @@ class BudgetResponse(BaseModel):
 
 class UsageSummaryResponse(BaseModel):
     """Response model for usage summary"""
+
     total_cost_cents: int
     total_cost_dollars: float
     usage_by_type: Dict[str, Dict[str, Any]]
@@ -71,7 +83,7 @@ class UsageSummaryResponse(BaseModel):
 async def create_budget(
     request: CreateBudgetRequest,
     org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Create a new budget for the organization or a specific agent"""
     try:
@@ -79,14 +91,19 @@ async def create_budget(
         try:
             period = BudgetPeriod(request.period)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Invalid period: {request.period}")
-        
+            raise HTTPException(
+                status_code=400, detail=f"Invalid period: {request.period}"
+            )
+
         # Validate enforcement mode
         try:
             enforcement_mode = EnforcementMode(request.enforcement_mode)
         except ValueError:
-            raise HTTPException(status_code=400, detail=f"Invalid enforcement mode: {request.enforcement_mode}")
-        
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid enforcement mode: {request.enforcement_mode}",
+            )
+
         budget_service = BudgetService(db)
         budget = budget_service.create_budget(
             org_id=org_id,
@@ -94,11 +111,11 @@ async def create_budget(
             limit_cents=request.limit_cents,
             agent_id=request.agent_id,
             enforcement_mode=enforcement_mode,
-            alerts_config=request.alerts_config
+            alerts_config=request.alerts_config,
         )
-        
+
         return _budget_to_response(budget)
-        
+
     except Exception as e:
         logger.error(f"Error creating budget: {e}")
         raise HTTPException(status_code=500, detail="Failed to create budget")
@@ -108,15 +125,15 @@ async def create_budget(
 async def list_budgets(
     agent_id: Optional[str] = Query(None, description="Filter by agent ID"),
     org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """List all budgets for the organization"""
     try:
         budget_service = BudgetService(db)
         budgets = budget_service.get_budgets_for_org(org_id, agent_id)
-        
+
         return [_budget_to_response(budget) for budget in budgets]
-        
+
     except Exception as e:
         logger.error(f"Error listing budgets: {e}")
         raise HTTPException(status_code=500, detail="Failed to list budgets")
@@ -126,18 +143,18 @@ async def list_budgets(
 async def get_budget(
     budget_id: str,
     org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get a specific budget by ID"""
     try:
         budget_service = BudgetService(db)
         budget = budget_service.get_budget(budget_id)
-        
+
         if not budget or budget.org_id != org_id:
             raise HTTPException(status_code=404, detail="Budget not found")
-        
+
         return _budget_to_response(budget)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -150,37 +167,40 @@ async def update_budget(
     budget_id: str,
     request: UpdateBudgetRequest,
     org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Update a budget"""
     try:
         budget_service = BudgetService(db)
-        
+
         # Verify budget exists and belongs to org
         existing_budget = budget_service.get_budget(budget_id)
         if not existing_budget or existing_budget.org_id != org_id:
             raise HTTPException(status_code=404, detail="Budget not found")
-        
+
         # Validate enforcement mode if provided
         enforcement_mode = None
         if request.enforcement_mode:
             try:
                 enforcement_mode = EnforcementMode(request.enforcement_mode)
             except ValueError:
-                raise HTTPException(status_code=400, detail=f"Invalid enforcement mode: {request.enforcement_mode}")
-        
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Invalid enforcement mode: {request.enforcement_mode}",
+                )
+
         budget = budget_service.update_budget(
             budget_id=budget_id,
             limit_cents=request.limit_cents,
             enforcement_mode=enforcement_mode,
-            alerts_config=request.alerts_config
+            alerts_config=request.alerts_config,
         )
-        
+
         if not budget:
             raise HTTPException(status_code=404, detail="Budget not found")
-        
+
         return _budget_to_response(budget)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -194,36 +214,38 @@ async def get_usage_summary(
     period_start: Optional[str] = Query(None, description="Period start (ISO format)"),
     period_end: Optional[str] = Query(None, description="Period end (ISO format)"),
     org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get usage summary for the organization or a specific agent"""
     try:
         # Parse dates if provided
         start_date = None
         end_date = None
-        
+
         if period_start:
             try:
-                start_date = datetime.fromisoformat(period_start.replace('Z', '+00:00'))
+                start_date = datetime.fromisoformat(period_start.replace("Z", "+00:00"))
             except ValueError:
-                raise HTTPException(status_code=400, detail="Invalid period_start format")
-        
+                raise HTTPException(
+                    status_code=400, detail="Invalid period_start format"
+                )
+
         if period_end:
             try:
-                end_date = datetime.fromisoformat(period_end.replace('Z', '+00:00'))
+                end_date = datetime.fromisoformat(period_end.replace("Z", "+00:00"))
             except ValueError:
                 raise HTTPException(status_code=400, detail="Invalid period_end format")
-        
+
         usage_orchestrator = UsageOrchestrator(db)
         summary = usage_orchestrator.get_usage_summary(
             org_id=org_id,
             agent_id=agent_id,
             period_start=start_date,
-            period_end=end_date
+            period_end=end_date,
         )
-        
+
         return UsageSummaryResponse(**summary)
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -235,7 +257,7 @@ async def get_usage_summary(
 async def get_current_month_usage(
     agent_id: Optional[str] = Query(None, description="Filter by agent ID"),
     org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Get usage summary for the current month"""
     try:
@@ -246,11 +268,11 @@ async def get_current_month_usage(
             org_id=org_id,
             agent_id=agent_id,
             period_start=start_of_month,
-            period_end=now
+            period_end=now,
         )
-        
+
         return UsageSummaryResponse(**summary)
-        
+
     except Exception as e:
         logger.error(f"Error getting current month usage: {e}")
         raise HTTPException(status_code=500, detail="Failed to get current month usage")
@@ -261,17 +283,17 @@ async def generate_usage_report(
     start_date: str = Query(..., description="Report start date (ISO format)"),
     end_date: str = Query(..., description="Report end date (ISO format)"),
     org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """Generate comprehensive usage report"""
     try:
         # Parse dates
         try:
-            start = datetime.fromisoformat(start_date.replace('Z', '+00:00'))
-            end = datetime.fromisoformat(end_date.replace('Z', '+00:00'))
+            start = datetime.fromisoformat(start_date.replace("Z", "+00:00"))
+            end = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid date format")
-        
+
         usage_orchestrator = UsageOrchestrator(db)
 
         # Generate comprehensive report
@@ -285,31 +307,25 @@ async def generate_usage_report(
         agent_usage = {}
         for agent in agents:
             agent_summary = usage_orchestrator.get_usage_summary(
-                org_id=org_id,
-                agent_id=agent.id,
-                period_start=start,
-                period_end=end
+                org_id=org_id, agent_id=agent.id, period_start=start, period_end=end
             )
             if agent_summary["record_count"] > 0:
                 agent_usage[agent.id] = {
                     "agent_name": agent.display_name,
-                    **agent_summary
+                    **agent_summary,
                 }
 
         report = {
             "org_id": org_id,
-            "period": {
-                "start": start.isoformat(),
-                "end": end.isoformat()
-            },
+            "period": {"start": start.isoformat(), "end": end.isoformat()},
             "summary": summary,
             "agent_usage": agent_usage,
             "budget_status": budget_status,
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": datetime.utcnow().isoformat(),
         }
-        
+
         return report
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -323,14 +339,11 @@ async def get_pricing_rates(db: Session = Depends(get_db)):
     try:
         cost_calculator = CostCalculationService()
         rates = cost_calculator.get_pricing_rates()
-        
+
         descriptions = cost_calculator.get_usage_descriptions()
 
-        return {
-            "rates_cents_per_unit": rates,
-            "descriptions": descriptions
-        }
-        
+        return {"rates_cents_per_unit": rates, "descriptions": descriptions}
+
     except Exception as e:
         logger.error(f"Error getting pricing rates: {e}")
         raise HTTPException(status_code=500, detail="Failed to get pricing rates")
@@ -338,12 +351,13 @@ async def get_pricing_rates(db: Session = Depends(get_db)):
 
 # Helper functions
 
+
 def _budget_to_response(budget) -> BudgetResponse:
     """Convert budget model to response"""
     utilization_percent = 0
     if budget.limit_cents > 0:
         utilization_percent = (budget.current_usage_cents / budget.limit_cents) * 100
-    
+
     return BudgetResponse(
         id=budget.id,
         org_id=budget.org_id,
@@ -358,5 +372,5 @@ def _budget_to_response(budget) -> BudgetResponse:
         status=budget.status,
         alerts_config=budget.alerts_json or {},
         created_at=budget.created_at.isoformat(),
-        updated_at=budget.updated_at.isoformat() if budget.updated_at else None
+        updated_at=budget.updated_at.isoformat() if budget.updated_at else None,
     )

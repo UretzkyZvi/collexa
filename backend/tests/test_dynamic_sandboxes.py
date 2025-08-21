@@ -17,6 +17,7 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def patch_dependencies(monkeypatch):
     """Mock Stack Auth and database for all tests."""
+
     def fake_verify_token(token: str):
         if token == "fake-token":  # Note: without "Bearer " prefix
             return {"id": "test-user", "selectedTeamId": "test_org_123"}
@@ -39,9 +40,7 @@ def patch_dependencies(monkeypatch):
     monkeypatch.setattr(
         "app.security.stack_auth.verify_team_membership", fake_verify_team
     )
-    monkeypatch.setattr(
-        "app.db.session.set_rls_for_session", fake_set_rls
-    )
+    monkeypatch.setattr("app.db.session.set_rls_for_session", fake_set_rls)
 
 
 @pytest.fixture
@@ -74,35 +73,36 @@ def sample_sandbox_info():
                 url="http://localhost:45001",
                 status="running",
                 spec_path="/tmp/sb_test123_figma.yaml",
-                endpoints=["/me", "/files/{key}", "/files/{key}/nodes"]
+                endpoints=["/me", "/files/{key}", "/files/{key}/nodes"],
             )
         },
         status="running",
         created_at=datetime.utcnow(),
         expires_at=datetime.utcnow() + timedelta(hours=2),
         last_accessed=datetime.utcnow(),
-        proxy_url="http://localhost:4000/sandbox/sb_test123"
+        proxy_url="http://localhost:4000/sandbox/sb_test123",
     )
 
 
 class TestCreateDynamicSandbox:
     """Test dynamic sandbox creation."""
-    
+
     def test_create_sandbox_success(self, mock_db, sample_sandbox_info):
         """Test successful sandbox creation."""
-        
+
         # Mock domain service at the router level
-        with patch('app.api.routers.sandboxes.SandboxDomainService') as mock_service_class:
+        with patch(
+            "app.api.routers.sandboxes.SandboxDomainService"
+        ) as mock_service_class:
             mock_service = AsyncMock()
 
             # Convert SandboxInfo to SandboxResponse for the return value
             from app.schemas.sandbox import SandboxResponse, SandboxServiceResponse
+
             services = {}
             for name, service in sample_sandbox_info.services.items():
                 services[name] = SandboxServiceResponse(
-                    url=service.url,
-                    status=service.status,
-                    endpoints=service.endpoints
+                    url=service.url, status=service.status, endpoints=service.endpoints
                 )
 
             sandbox_response = SandboxResponse(
@@ -113,12 +113,12 @@ class TestCreateDynamicSandbox:
                 proxy_url=sample_sandbox_info.proxy_url,
                 created_at=sample_sandbox_info.created_at,
                 expires_at=sample_sandbox_info.expires_at,
-                last_accessed=sample_sandbox_info.last_accessed
+                last_accessed=sample_sandbox_info.last_accessed,
             )
 
             mock_service.create_sandbox.return_value = sandbox_response
             mock_service_class.return_value = mock_service
-            
+
             response = client.post(
                 "/v1/agents/agent_456/sandboxes",
                 json={
@@ -126,19 +126,17 @@ class TestCreateDynamicSandbox:
                     "custom_configs": {
                         "figma": {
                             "service_type": "figma",
-                            "workspace_config": {
-                                "project_name": "Test Project"
-                            }
+                            "workspace_config": {"project_name": "Test Project"},
                         }
                     },
-                    "ttl_minutes": 120
+                    "ttl_minutes": 120,
                 },
                 headers={
                     "Authorization": "Bearer fake-token",
-                    "X-Team-Id": "test_org_123"
-                }
+                    "X-Team-Id": "test_org_123",
+                },
             )
-            
+
             assert response.status_code == 200
             data = response.json()
             assert data["sandbox_id"] == "sb_test123"
@@ -148,7 +146,7 @@ class TestCreateDynamicSandbox:
             assert data["services"]["figma"]["url"] == "http://localhost:45001"
             assert data["services"]["figma"]["status"] == "running"
             assert len(data["services"]["figma"]["endpoints"]) == 3
-    
+
     def test_create_sandbox_invalid_request(self, mock_db):
         """Test sandbox creation with invalid request."""
 
@@ -156,34 +154,32 @@ class TestCreateDynamicSandbox:
             "/v1/agents/agent_456/sandboxes",
             json={
                 "required_services": [],  # Empty services should fail validation
-                "ttl_minutes": 0  # Invalid TTL
+                "ttl_minutes": 0,  # Invalid TTL
             },
-            headers={
-                "Authorization": "Bearer fake-token",
-                "X-Team-Id": "test_org_123"
-            }
+            headers={"Authorization": "Bearer fake-token", "X-Team-Id": "test_org_123"},
         )
 
         assert response.status_code == 422  # Validation error
-    
+
     def test_create_sandbox_service_error(self, mock_db):
         """Test sandbox creation when service fails."""
 
-        with patch('app.api.routers.sandboxes.SandboxDomainService') as mock_service_class:
+        with patch(
+            "app.api.routers.sandboxes.SandboxDomainService"
+        ) as mock_service_class:
             mock_service = AsyncMock()
-            mock_service.create_sandbox.side_effect = Exception("Docker container failed to start")
+            mock_service.create_sandbox.side_effect = Exception(
+                "Docker container failed to start"
+            )
             mock_service_class.return_value = mock_service
 
             response = client.post(
                 "/v1/agents/agent_456/sandboxes",
-                json={
-                    "required_services": ["figma"],
-                    "ttl_minutes": 60
-                },
+                json={"required_services": ["figma"], "ttl_minutes": 60},
                 headers={
                     "Authorization": "Bearer fake-token",
-                    "X-Team-Id": "test_org_123"
-                }
+                    "X-Team-Id": "test_org_123",
+                },
             )
 
             assert response.status_code == 400
@@ -193,21 +189,22 @@ class TestCreateDynamicSandbox:
 
 class TestGetDynamicSandbox:
     """Test getting sandbox information."""
-    
+
     def test_get_sandbox_success(self, mock_db, sample_sandbox_info):
         """Test successful sandbox retrieval."""
 
-        with patch('app.api.routers.sandboxes.SandboxDomainService') as mock_service_class:
+        with patch(
+            "app.api.routers.sandboxes.SandboxDomainService"
+        ) as mock_service_class:
             mock_service = AsyncMock()
 
             # Convert SandboxInfo to SandboxResponse
             from app.schemas.sandbox import SandboxResponse, SandboxServiceResponse
+
             services = {}
             for name, service in sample_sandbox_info.services.items():
                 services[name] = SandboxServiceResponse(
-                    url=service.url,
-                    status=service.status,
-                    endpoints=service.endpoints
+                    url=service.url, status=service.status, endpoints=service.endpoints
                 )
 
             sandbox_response = SandboxResponse(
@@ -218,7 +215,7 @@ class TestGetDynamicSandbox:
                 proxy_url=sample_sandbox_info.proxy_url,
                 created_at=sample_sandbox_info.created_at,
                 expires_at=sample_sandbox_info.expires_at,
-                last_accessed=sample_sandbox_info.last_accessed
+                last_accessed=sample_sandbox_info.last_accessed,
             )
 
             mock_service.get_sandbox.return_value = sandbox_response
@@ -228,8 +225,8 @@ class TestGetDynamicSandbox:
                 "/v1/agents/agent_456/sandboxes/sb_test123",
                 headers={
                     "Authorization": "Bearer fake-token",
-                    "X-Team-Id": "test_org_123"
-                }
+                    "X-Team-Id": "test_org_123",
+                },
             )
 
             assert response.status_code == 200
@@ -237,11 +234,13 @@ class TestGetDynamicSandbox:
             assert data["sandbox_id"] == "sb_test123"
             assert data["agent_id"] == "agent_456"
             assert "figma" in data["services"]
-    
+
     def test_get_sandbox_not_found(self, mock_db):
         """Test getting non-existent sandbox."""
 
-        with patch('app.api.routers.sandboxes.SandboxDomainService') as mock_service_class:
+        with patch(
+            "app.api.routers.sandboxes.SandboxDomainService"
+        ) as mock_service_class:
             mock_service = AsyncMock()
             mock_service.get_sandbox.side_effect = Exception("Sandbox not found")
             mock_service_class.return_value = mock_service
@@ -250,8 +249,8 @@ class TestGetDynamicSandbox:
                 "/v1/agents/agent_456/sandboxes/nonexistent",
                 headers={
                     "Authorization": "Bearer fake-token",
-                    "X-Team-Id": "test_org_123"
-                }
+                    "X-Team-Id": "test_org_123",
+                },
             )
 
             assert response.status_code == 404
@@ -261,19 +260,21 @@ class TestGetDynamicSandbox:
 
 class TestListDynamicSandboxes:
     """Test listing sandboxes."""
-    
+
     def test_list_sandboxes_success(self, mock_db, sample_sandbox_info):
         """Test successful sandbox listing."""
 
-        from app.schemas.sandbox import SandboxListResponse, SandboxResponse, SandboxServiceResponse
+        from app.schemas.sandbox import (
+            SandboxListResponse,
+            SandboxResponse,
+            SandboxServiceResponse,
+        )
 
         # Convert SandboxInfo to SandboxResponse
         services = {}
         for name, service in sample_sandbox_info.services.items():
             services[name] = SandboxServiceResponse(
-                url=service.url,
-                status=service.status,
-                endpoints=service.endpoints
+                url=service.url, status=service.status, endpoints=service.endpoints
             )
 
         sandbox_response = SandboxResponse(
@@ -284,15 +285,14 @@ class TestListDynamicSandboxes:
             proxy_url=sample_sandbox_info.proxy_url,
             created_at=sample_sandbox_info.created_at,
             expires_at=sample_sandbox_info.expires_at,
-            last_accessed=sample_sandbox_info.last_accessed
+            last_accessed=sample_sandbox_info.last_accessed,
         )
 
-        mock_response = SandboxListResponse(
-            sandboxes=[sandbox_response],
-            total=1
-        )
-        
-        with patch('app.api.routers.sandboxes.SandboxDomainService') as mock_service_class:
+        mock_response = SandboxListResponse(sandboxes=[sandbox_response], total=1)
+
+        with patch(
+            "app.api.routers.sandboxes.SandboxDomainService"
+        ) as mock_service_class:
             mock_service = AsyncMock()
             mock_service.list_sandboxes.return_value = mock_response
             mock_service_class.return_value = mock_service
@@ -301,8 +301,8 @@ class TestListDynamicSandboxes:
                 "/v1/agents/agent_456/sandboxes",
                 headers={
                     "Authorization": "Bearer fake-token",
-                    "X-Team-Id": "test_org_123"
-                }
+                    "X-Team-Id": "test_org_123",
+                },
             )
 
             assert response.status_code == 200
@@ -314,10 +314,10 @@ class TestListDynamicSandboxes:
 
 class TestUpdateDynamicSandbox:
     """Test updating sandbox configuration."""
-    
+
     def test_update_sandbox_add_service(self, mock_db, sample_sandbox_info):
         """Test adding a service to existing sandbox."""
-        
+
         # Update sample to include slack service
         sample_sandbox_info.services["slack"] = SandboxService(
             container_id="prism_slack_sb_test123",
@@ -325,20 +325,21 @@ class TestUpdateDynamicSandbox:
             url="http://localhost:45002",
             status="running",
             spec_path="/tmp/sb_test123_slack.yaml",
-            endpoints=["/auth.test", "/chat.postMessage"]
+            endpoints=["/auth.test", "/chat.postMessage"],
         )
-        
-        with patch('app.api.routers.sandboxes.SandboxDomainService') as mock_service_class:
+
+        with patch(
+            "app.api.routers.sandboxes.SandboxDomainService"
+        ) as mock_service_class:
             mock_service = AsyncMock()
 
             # Convert SandboxInfo to SandboxResponse
             from app.schemas.sandbox import SandboxResponse, SandboxServiceResponse
+
             services = {}
             for name, service in sample_sandbox_info.services.items():
                 services[name] = SandboxServiceResponse(
-                    url=service.url,
-                    status=service.status,
-                    endpoints=service.endpoints
+                    url=service.url, status=service.status, endpoints=service.endpoints
                 )
 
             sandbox_response = SandboxResponse(
@@ -349,7 +350,7 @@ class TestUpdateDynamicSandbox:
                 proxy_url=sample_sandbox_info.proxy_url,
                 created_at=sample_sandbox_info.created_at,
                 expires_at=sample_sandbox_info.expires_at,
-                last_accessed=sample_sandbox_info.last_accessed
+                last_accessed=sample_sandbox_info.last_accessed,
             )
 
             mock_service.update_sandbox.return_value = sandbox_response
@@ -362,16 +363,14 @@ class TestUpdateDynamicSandbox:
                     "update_configs": {
                         "slack": {
                             "service_type": "slack",
-                            "workspace_config": {
-                                "team_name": "Test Team"
-                            }
+                            "workspace_config": {"team_name": "Test Team"},
                         }
-                    }
+                    },
                 },
                 headers={
                     "Authorization": "Bearer fake-token",
-                    "X-Team-Id": "test_org_123"
-                }
+                    "X-Team-Id": "test_org_123",
+                },
             )
 
             assert response.status_code == 200
@@ -382,18 +381,19 @@ class TestUpdateDynamicSandbox:
 
 class TestDeleteDynamicSandbox:
     """Test deleting sandbox."""
-    
+
     def test_delete_sandbox_success(self, mock_db):
         """Test successful sandbox deletion."""
-        
+
         from app.schemas.sandbox import DeleteSandboxResponse
-        
+
         mock_response = DeleteSandboxResponse(
-            message="Sandbox deleted successfully",
-            sandbox_id="sb_test123"
+            message="Sandbox deleted successfully", sandbox_id="sb_test123"
         )
-        
-        with patch('app.api.routers.sandboxes.SandboxDomainService') as mock_service_class:
+
+        with patch(
+            "app.api.routers.sandboxes.SandboxDomainService"
+        ) as mock_service_class:
             mock_service = AsyncMock()
             mock_service.delete_sandbox.return_value = mock_response
             mock_service_class.return_value = mock_service
@@ -402,19 +402,21 @@ class TestDeleteDynamicSandbox:
                 "/v1/agents/agent_456/sandboxes/sb_test123",
                 headers={
                     "Authorization": "Bearer fake-token",
-                    "X-Team-Id": "test_org_123"
-                }
+                    "X-Team-Id": "test_org_123",
+                },
             )
 
             assert response.status_code == 200
             data = response.json()
             assert data["message"] == "Sandbox deleted successfully"
             assert data["sandbox_id"] == "sb_test123"
-    
+
     def test_delete_sandbox_not_found(self, mock_db):
         """Test deleting non-existent sandbox."""
 
-        with patch('app.api.routers.sandboxes.SandboxDomainService') as mock_service_class:
+        with patch(
+            "app.api.routers.sandboxes.SandboxDomainService"
+        ) as mock_service_class:
             mock_service = AsyncMock()
             mock_service.delete_sandbox.side_effect = Exception("Sandbox not found")
             mock_service_class.return_value = mock_service
@@ -423,8 +425,8 @@ class TestDeleteDynamicSandbox:
                 "/v1/agents/agent_456/sandboxes/nonexistent",
                 headers={
                     "Authorization": "Bearer fake-token",
-                    "X-Team-Id": "test_org_123"
-                }
+                    "X-Team-Id": "test_org_123",
+                },
             )
 
             assert response.status_code == 404

@@ -15,6 +15,7 @@ def _ensure_tables():
     try:
         from app.db.session import Base, engine
         from app.db import models  # noqa: F401 ensure models are registered
+
         Base.metadata.create_all(bind=engine)
         yield
     finally:
@@ -27,11 +28,7 @@ def _ensure_tables():
 @pytest.fixture
 def mock_auth():
     """Mock authentication that returns valid org/user info."""
-    return {
-        "org_id": "test-org",
-        "user_id": "test-user",
-        "selectedTeamId": "test-org"
-    }
+    return {"org_id": "test-org", "user_id": "test-user", "selectedTeamId": "test-org"}
 
 
 @pytest.fixture
@@ -48,3 +45,26 @@ def mock_db():
     mock.count.return_value = 0
     return mock
 
+
+@pytest.fixture(autouse=True)
+def override_get_db_when_mock_requested(request):
+    """If a test requests the 'mock_db' fixture, override FastAPI get_db dependency
+    to use that mock for the duration of the test.
+    """
+    if "mock_db" in request.fixturenames:
+        from app.main import app
+        from app.api.deps import get_db
+
+        mock_db = request.getfixturevalue("mock_db")
+
+        def _get_mock_db():
+            return mock_db
+
+        app.dependency_overrides[get_db] = _get_mock_db
+        try:
+            yield
+        finally:
+            app.dependency_overrides.pop(get_db, None)
+    else:
+        # No-op for tests that don't use mock_db
+        yield

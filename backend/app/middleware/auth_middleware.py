@@ -59,7 +59,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
                 try:
                     key_row = (
                         db.query(models.AgentKey)
-                        .filter(models.AgentKey.key_hash == key_hash, models.AgentKey.revoked_at.is_(None))
+                        .filter(
+                            models.AgentKey.key_hash == key_hash,
+                            models.AgentKey.revoked_at.is_(None),
+                        )
                         .first()
                     )
                 finally:

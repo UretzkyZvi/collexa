@@ -69,4 +69,3 @@ async def get_agent(
         "org_id": row.org_id,
         "created_by": row.created_by,
     }
-

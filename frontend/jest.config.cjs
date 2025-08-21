@@ -8,6 +8,7 @@ module.exports = {
   moduleNameMapper: {
     '^~/(.*)$': '<rootDir>/src/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/hooks/useAuthFetch$': '<rootDir>/src/hooks/useAuthFetch.ts',
   },
   setupFilesAfterEnv: ['@testing-library/jest-dom'],
 };

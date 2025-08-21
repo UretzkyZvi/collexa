@@ -30,30 +30,43 @@ logger = logging.getLogger(__name__)
 # These wrappers are importable and do not close over unserializable state.
 async def job_check_budget_violations():
     from app.services.scheduling.budget_scheduler_service import budget_scheduler
+
     await budget_scheduler.check_budget_violations()
+
 
 async def job_check_budget_warnings():
     from app.services.scheduling.budget_scheduler_service import budget_scheduler
+
     await budget_scheduler.check_budget_warnings()
+
 
 async def job_reset_daily_budgets():
     from app.services.scheduling.budget_scheduler_service import budget_scheduler
+
     await budget_scheduler.reset_daily_budgets()
+
 
 async def job_reset_weekly_budgets():
     from app.services.scheduling.budget_scheduler_service import budget_scheduler
+
     await budget_scheduler.reset_weekly_budgets()
+
 
 async def job_reset_monthly_budgets():
     from app.services.scheduling.budget_scheduler_service import budget_scheduler
+
     await budget_scheduler.reset_monthly_budgets()
+
 
 async def job_generate_monthly_reports():
     from app.services.scheduling.budget_scheduler_service import budget_scheduler
+
     await budget_scheduler.generate_monthly_reports()
+
 
 async def job_cleanup_old_usage_records():
     from app.services.scheduling.budget_scheduler_service import budget_scheduler
+
     await budget_scheduler.cleanup_old_usage_records()
 
 
@@ -62,24 +75,20 @@ class BudgetSchedulerService:
 
     def __init__(self):
         # Configure job stores and executors
-        jobstores = {
-            'default': SQLAlchemyJobStore(url=settings.DATABASE_URL)
-        }
-        executors = {
-            'default': AsyncIOExecutor()
-        }
+        jobstores = {"default": SQLAlchemyJobStore(url=settings.DATABASE_URL)}
+        executors = {"default": AsyncIOExecutor()}
 
         job_defaults = {
-            'coalesce': False,
-            'max_instances': 3,
-            'misfire_grace_time': 300  # 5 minutes
+            "coalesce": False,
+            "max_instances": 3,
+            "misfire_grace_time": 300,  # 5 minutes
         }
 
         self.scheduler = AsyncIOScheduler(
             jobstores=jobstores,
             executors=executors,
             job_defaults=job_defaults,
-            timezone='UTC'
+            timezone="UTC",
         )
 
         self.setup_jobs()
@@ -91,63 +100,63 @@ class BudgetSchedulerService:
         self.scheduler.add_job(
             func=job_check_budget_violations,
             trigger=IntervalTrigger(minutes=15),
-            id='budget_violation_check',
-            name='Check Budget Violations',
-            replace_existing=True
+            id="budget_violation_check",
+            name="Check Budget Violations",
+            replace_existing=True,
         )
 
         # Budget warnings - every hour
         self.scheduler.add_job(
             func=job_check_budget_warnings,
             trigger=IntervalTrigger(hours=1),
-            id='budget_warning_check',
-            name='Check Budget Warnings',
-            replace_existing=True
+            id="budget_warning_check",
+            name="Check Budget Warnings",
+            replace_existing=True,
         )
 
         # Daily budget resets - at midnight UTC
         self.scheduler.add_job(
             func=job_reset_daily_budgets,
             trigger=CronTrigger(hour=0, minute=0),
-            id='daily_budget_reset',
-            name='Reset Daily Budgets',
-            replace_existing=True
+            id="daily_budget_reset",
+            name="Reset Daily Budgets",
+            replace_existing=True,
         )
 
         # Weekly budget resets - Monday at midnight UTC
         self.scheduler.add_job(
             func=job_reset_weekly_budgets,
             trigger=CronTrigger(day_of_week=0, hour=0, minute=0),
-            id='weekly_budget_reset',
-            name='Reset Weekly Budgets',
-            replace_existing=True
+            id="weekly_budget_reset",
+            name="Reset Weekly Budgets",
+            replace_existing=True,
         )
 
         # Monthly budget resets - 1st of month at midnight UTC
         self.scheduler.add_job(
             func=job_reset_monthly_budgets,
             trigger=CronTrigger(day=1, hour=0, minute=0),
-            id='monthly_budget_reset',
-            name='Reset Monthly Budgets',
-            replace_existing=True
+            id="monthly_budget_reset",
+            name="Reset Monthly Budgets",
+            replace_existing=True,
         )
 
         # Generate monthly usage reports - 2nd of month at 2 AM UTC
         self.scheduler.add_job(
             func=job_generate_monthly_reports,
             trigger=CronTrigger(day=2, hour=2, minute=0),
-            id='monthly_usage_reports',
-            name='Generate Monthly Usage Reports',
-            replace_existing=True
+            id="monthly_usage_reports",
+            name="Generate Monthly Usage Reports",
+            replace_existing=True,
         )
 
         # Cleanup old usage records - weekly on Sunday at 3 AM UTC
         self.scheduler.add_job(
             func=job_cleanup_old_usage_records,
             trigger=CronTrigger(day_of_week=6, hour=3, minute=0),
-            id='cleanup_usage_records',
-            name='Cleanup Old Usage Records',
-            replace_existing=True
+            id="cleanup_usage_records",
+            name="Cleanup Old Usage Records",
+            replace_existing=True,
         )
 
         logger.info("Scheduled jobs configured successfully")
@@ -186,7 +195,9 @@ class BudgetSchedulerService:
                     violation_count += len(violations)
                     await self._handle_budget_violations(org.id, violations)
 
-            logger.info(f"Budget violation check completed: {violation_count} violations found across {len(orgs)} organizations")
+            logger.info(
+                f"Budget violation check completed: {violation_count} violations found across {len(orgs)} organizations"
+            )
 
         except Exception as e:
             logger.error(f"Error checking budget violations: {e}")
@@ -202,13 +213,17 @@ class BudgetSchedulerService:
 
             warning_count = 0
             for org in orgs:
-                warnings = budget_enforcement.get_budget_warnings(org.id, warning_threshold=0.8)
+                warnings = budget_enforcement.get_budget_warnings(
+                    org.id, warning_threshold=0.8
+                )
 
                 if warnings:
                     warning_count += len(warnings)
                     await self._handle_budget_warnings(org.id, warnings)
 
-            logger.info(f"Budget warning check completed: {warning_count} warnings found across {len(orgs)} organizations")
+            logger.info(
+                f"Budget warning check completed: {warning_count} warnings found across {len(orgs)} organizations"
+            )
 
         except Exception as e:
             logger.error(f"Error checking budget warnings: {e}")
@@ -257,12 +272,18 @@ class BudgetSchedulerService:
                     )
 
                     # TODO: Store report or send via email
-                    logger.info(f"Generated monthly report for org {org.id}: ${report['summary']['total_cost_dollars']:.2f}")
+                    logger.info(
+                        f"Generated monthly report for org {org.id}: ${report['summary']['total_cost_dollars']:.2f}"
+                    )
 
                 except Exception as e:
-                    logger.error(f"Failed to generate monthly report for org {org.id}: {e}")
+                    logger.error(
+                        f"Failed to generate monthly report for org {org.id}: {e}"
+                    )
 
-            logger.info(f"Monthly report generation completed for {len(orgs)} organizations")
+            logger.info(
+                f"Monthly report generation completed for {len(orgs)} organizations"
+            )
 
         except Exception as e:
             logger.error(f"Error generating monthly reports: {e}")
@@ -275,9 +296,11 @@ class BudgetSchedulerService:
             # Delete usage records older than 2 years
             cutoff_date = datetime.utcnow() - timedelta(days=730)
 
-            deleted_count = db.query(models.UsageRecord).filter(
-                models.UsageRecord.recorded_at < cutoff_date
-            ).delete()
+            deleted_count = (
+                db.query(models.UsageRecord)
+                .filter(models.UsageRecord.recorded_at < cutoff_date)
+                .delete()
+            )
 
             db.commit()
 
@@ -296,9 +319,11 @@ class BudgetSchedulerService:
             budget_enforcement = BudgetEnforcementService(db)
 
             # Get all budgets for this period
-            budgets = db.query(models.Budget).filter(
-                models.Budget.period == period.value
-            ).all()
+            budgets = (
+                db.query(models.Budget)
+                .filter(models.Budget.period == period.value)
+                .all()
+            )
 
             reset_count = 0
             for budget in budgets:
@@ -313,11 +338,15 @@ class BudgetSchedulerService:
         except Exception as e:
             logger.error(f"Error resetting {period.value} budgets: {e}")
 
-    async def _handle_budget_violations(self, org_id: str, violations: List[models.Budget]):
+    async def _handle_budget_violations(
+        self, org_id: str, violations: List[models.Budget]
+    ):
         """Handle budget violations by sending alerts"""
         try:
             # Queue alert tasks
-            from app.services.billing.async_webhook_service import send_budget_alert_async
+            from app.services.billing.async_webhook_service import (
+                send_budget_alert_async,
+            )
 
             for violation in violations:
                 alert_data = {
@@ -326,9 +355,13 @@ class BudgetSchedulerService:
                     "agent_id": violation.agent_id,
                     "limit_cents": violation.limit_cents,
                     "current_usage_cents": violation.current_usage_cents,
-                    "utilization_percent": (violation.current_usage_cents / violation.limit_cents * 100) if violation.limit_cents > 0 else 0,
+                    "utilization_percent": (
+                        (violation.current_usage_cents / violation.limit_cents * 100)
+                        if violation.limit_cents > 0
+                        else 0
+                    ),
                     "enforcement_mode": violation.enforcement_mode,
-                    "period_end": violation.period_end.isoformat()
+                    "period_end": violation.period_end.isoformat(),
                 }
 
                 # Queue async alert
@@ -339,15 +372,21 @@ class BudgetSchedulerService:
         except Exception as e:
             logger.error(f"Error handling budget violations for org {org_id}: {e}")
 
-    async def _handle_budget_warnings(self, org_id: str, warnings: List[Dict[str, Any]]):
+    async def _handle_budget_warnings(
+        self, org_id: str, warnings: List[Dict[str, Any]]
+    ):
         """Handle budget warnings by sending alerts"""
         try:
             # Queue alert task
-            from app.services.billing.async_webhook_service import send_budget_alert_async
+            from app.services.billing.async_webhook_service import (
+                send_budget_alert_async,
+            )
 
             send_budget_alert_async.delay(org_id, "warning", {"warnings": warnings})
 
-            logger.info(f"Queued warning alert for org {org_id} with {len(warnings)} warnings")
+            logger.info(
+                f"Queued warning alert for org {org_id} with {len(warnings)} warnings"
+            )
 
         except Exception as e:
             logger.error(f"Error handling budget warnings for org {org_id}: {e}")
@@ -356,17 +395,21 @@ class BudgetSchedulerService:
         """Get status of all scheduled jobs"""
         jobs = []
         for job in self.scheduler.get_jobs():
-            jobs.append({
-                "id": job.id,
-                "name": job.name,
-                "next_run": job.next_run_time.isoformat() if job.next_run_time else None,
-                "trigger": str(job.trigger)
-            })
+            jobs.append(
+                {
+                    "id": job.id,
+                    "name": job.name,
+                    "next_run": (
+                        job.next_run_time.isoformat() if job.next_run_time else None
+                    ),
+                    "trigger": str(job.trigger),
+                }
+            )
 
         return {
             "scheduler_running": self.scheduler.running,
             "job_count": len(jobs),
-            "jobs": jobs
+            "jobs": jobs,
         }
 
 

@@ -86,7 +86,9 @@ async def require_team(
         # Bearer token auth: verify team membership
         if ctx.get("access_token"):
             if not x_team_id:
-                raise HTTPException(status_code=400, detail="X-Team-Id header is required")
+                raise HTTPException(
+                    status_code=400, detail="X-Team-Id header is required"
+                )
             stack_auth.verify_team_membership(
                 x_team_id, ctx["access_token"]
             )  # may raise 403

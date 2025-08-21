@@ -16,8 +16,14 @@ def test_issue_and_use_api_key(monkeypatch):
     # monkeypatch stack auth to accept user1-token and team org1
     from app.security import stack_auth
 
-    monkeypatch.setattr(stack_auth, "verify_stack_access_token", lambda t: {"id": "user1", "selectedTeamId": "org1"})
-    monkeypatch.setattr(stack_auth, "verify_team_membership", lambda team, tok: {"id": team})
+    monkeypatch.setattr(
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "user1", "selectedTeamId": "org1"},
+    )
+    monkeypatch.setattr(
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
+    )
 
     # Create an agent via team auth
     r = client.post(
@@ -53,7 +59,11 @@ def test_issue_and_use_api_key(monkeypatch):
     # Need to find key_id from DB
     db = SessionLocal()
     try:
-        key_row = db.query(models.AgentKey).filter(models.AgentKey.key_hash == _hash(api_key)).first()
+        key_row = (
+            db.query(models.AgentKey)
+            .filter(models.AgentKey.key_hash == _hash(api_key))
+            .first()
+        )
         key_id = key_row.id
     finally:
         db.close()
@@ -71,4 +81,3 @@ def test_issue_and_use_api_key(monkeypatch):
         headers={"X-API-Key": api_key},
     )
     assert r5.status_code == 401
-

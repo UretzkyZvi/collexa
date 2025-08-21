@@ -26,4 +26,3 @@ async def close_http_client():
     if _client is not None:
         await _client.aclose()
         _client = None
-

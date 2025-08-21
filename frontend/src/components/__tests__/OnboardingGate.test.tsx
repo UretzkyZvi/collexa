@@ -1,6 +1,5 @@
 import { render, screen } from '@testing-library/react';
 import OnboardingGate from '~/components/OnboardingGate';
-import * as nextNav from 'next/navigation';
 
 jest.mock('next/navigation', () => ({
   ...jest.requireActual('next/navigation'),

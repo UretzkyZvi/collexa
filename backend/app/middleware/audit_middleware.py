@@ -7,7 +7,11 @@ from sqlalchemy.orm import Session
 from app.db.session import SessionLocal
 from app.db import models
 from app.observability.metrics import increment_api_calls, record_request_duration
-from app.observability.logging import set_request_context, log_api_call, get_structured_logger
+from app.observability.logging import (
+    set_request_context,
+    log_api_call,
+    get_structured_logger,
+)
 
 logger = get_structured_logger("audit_middleware")
 
@@ -22,7 +26,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
         self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ):
         path = request.url.path
-        
+
         # Skip non-API paths
         if not path.startswith("/v1") or path in ["/v1/health"]:
             return await call_next(request)
@@ -52,6 +56,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 request_body = body.decode("utf-8") if body else None
                 # Re-create request with body for downstream processing
                 from starlette.requests import Request as StarletteRequest
+
                 scope = request.scope.copy()
                 receive = request.receive
                 # Store body for later use
@@ -69,28 +74,29 @@ class AuditMiddleware(BaseHTTPMiddleware):
         auth_ctx = getattr(request.state, "auth", {})
         org_id = auth_ctx.get("org_id")
         actor_id = auth_ctx.get("user_id")
-        
+
         # For API key auth, use "api_key" as actor
         if auth_ctx.get("profile", {}).get("auth") == "api_key":
             actor_id = "api_key"
-        
+
         # Extract agent_id from path if present
         agent_id = None
         if "/agents/" in path:
             parts = path.split("/agents/")
             if len(parts) > 1:
                 agent_id = parts[1].split("/")[0]
-        
+
         # Extract capability from request body for invoke endpoints
         capability = None
         if path.endswith("/invoke") and hasattr(request.state, "_body"):
             try:
                 import json
+
                 body = json.loads(request.state._body)
                 capability = body.get("capability")
             except:
                 pass
-        
+
         # Log to database (async, don't block response)
         if org_id:  # Only log if we have org context
             try:
@@ -112,7 +118,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
             except Exception:
                 # Don't fail the request if audit logging fails
                 pass
-        
+
         # Record observability metrics
         if org_id:
             increment_api_calls(path, request.method, response.status_code, org_id)
@@ -127,7 +133,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 duration_ms,
                 actor_id=actor_id,
                 agent_id=agent_id,
-                capability=capability
+                capability=capability,
             )
 
         # Add request ID to response headers for debugging

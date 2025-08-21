@@ -2,7 +2,9 @@ import os
 import json
 import pytest
 
-pytestmark = pytest.mark.skip(reason="FastAPI/cryptography not installed in this local runner; covered in CI")
+pytestmark = pytest.mark.skip(
+    reason="FastAPI/cryptography not installed in this local runner; covered in CI"
+)
 
 
 def test_create_manifest_unsigned_when_no_key(monkeypatch):
@@ -32,4 +34,3 @@ AwEHoUQDQgAEQ8Z9dNfY9b8O+2wYtH8Xq3a2r5f0u7vg6v1q8cX8VQ0v7f+f6cV6
     res = client.post("/v1/agents/agent-2/manifests", json={})
     # Depending on jose validation, this may fail; accept 500 for now
     assert res.status_code in (200, 500, 404)
-

@@ -70,4 +70,3 @@ def test_debug_me_returns_auth_context(client, monkeypatch):
     assert r2.status_code == 200
     body2 = r2.json()
     assert body2.get("org_id") == "team_1"
-

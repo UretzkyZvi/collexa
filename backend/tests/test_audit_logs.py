@@ -12,12 +12,12 @@ def test_audit_logs_capture_api_calls(monkeypatch):
     from app.security import stack_auth
 
     monkeypatch.setattr(
-        stack_auth, "verify_stack_access_token", 
-        lambda t: {"id": "user1", "selectedTeamId": "org1"}
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "user1", "selectedTeamId": "org1"},
     )
     monkeypatch.setattr(
-        stack_auth, "verify_team_membership", 
-        lambda team, tok: {"id": team}
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
     )
 
     # Make an API call that should be audited
@@ -51,12 +51,12 @@ def test_audit_logs_api_key_auth(monkeypatch):
     from app.security import stack_auth
 
     monkeypatch.setattr(
-        stack_auth, "verify_stack_access_token", 
-        lambda t: {"id": "user1", "selectedTeamId": "org1"}
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "user1", "selectedTeamId": "org1"},
     )
     monkeypatch.setattr(
-        stack_auth, "verify_team_membership", 
-        lambda team, tok: {"id": team}
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
     )
 
     # Create agent and API key
@@ -105,12 +105,12 @@ def test_audit_logs_query_endpoint(monkeypatch):
     from app.security import stack_auth
 
     monkeypatch.setattr(
-        stack_auth, "verify_stack_access_token", 
-        lambda t: {"id": "user1", "selectedTeamId": "org1"}
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "user1", "selectedTeamId": "org1"},
     )
     monkeypatch.setattr(
-        stack_auth, "verify_team_membership", 
-        lambda team, tok: {"id": team}
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
     )
 
     # Make some API calls to generate audit logs
@@ -134,7 +134,7 @@ def test_audit_logs_query_endpoint(monkeypatch):
     data = r.json()
     assert "logs" in data
     assert len(data["logs"]) >= 2  # At least the two agent creations
-    
+
     # Check log structure
     log = data["logs"][0]
     assert "actor_id" in log
@@ -155,7 +155,9 @@ def test_audit_logs_org_isolation(monkeypatch):
         raise Exception("Invalid token")
 
     monkeypatch.setattr(stack_auth, "verify_stack_access_token", mock_verify)
-    monkeypatch.setattr(stack_auth, "verify_team_membership", lambda team, tok: {"id": team})
+    monkeypatch.setattr(
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
+    )
 
     # Create agents in different orgs
     client.post(
@@ -176,7 +178,7 @@ def test_audit_logs_org_isolation(monkeypatch):
     )
     assert r1.status_code == 200
     org1_logs = r1.json()["logs"]
-    
+
     # Query logs from org2 - should only see org2 logs
     r2 = client.get(
         "/v1/audit/logs",

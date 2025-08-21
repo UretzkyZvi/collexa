@@ -3,9 +3,10 @@ import SettingsPage from "../page";
 
 // Mock useAuthFetch
 const mockAuthFetch = jest.fn();
-jest.mock("@/hooks/useAuthFetch", () => ({
+jest.mock("~/lib/authFetch", () => ({
   useAuthFetch: () => mockAuthFetch,
 }));
+
 
 // Mock clipboard API
 Object.assign(navigator, {
@@ -70,13 +71,13 @@ describe("SettingsPage", () => {
     fireEvent.change(keyNameInput, { target: { value: "Test Key" } });
 
     // Click create button
-    const createButton = screen.getByText("Create Key");
+    const createButton = screen.getByTestId("create-key-button");
     fireEvent.click(createButton);
 
     // Wait for API key to be created and displayed
     await waitFor(() => {
-      expect(screen.getByText("New API Key Created")).toBeInTheDocument();
-      expect(screen.getByText("test-api-key-value")).toBeInTheDocument();
+      expect(screen.getByTestId("api-key-created-banner")).toBeInTheDocument();
+      expect(screen.getByTestId("api-key-value")).toHaveTextContent("test-api-key-value");
     });
 
     // Verify API call was made
@@ -85,6 +86,8 @@ describe("SettingsPage", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: "Test Key" }),
     });
+    // Ensure we didn't accidentally call list agents again after setup
+    expect(mockAuthFetch).toHaveBeenNthCalledWith(1, "/v1/agents");
   });
 
   it("copies API key to clipboard", async () => {
@@ -108,16 +111,20 @@ describe("SettingsPage", () => {
 
     render(<SettingsPage />);
 
-    // Wait for agents to load and create a key
+    // Wait for agents to load
     await waitFor(() => {
       expect(screen.getByText("Test Agent")).toBeInTheDocument();
     });
 
-    const createButton = screen.getByText("Create Key");
+    // Fill in key name to assert body
+    const keyNameInput = screen.getByPlaceholderText(/e.g., Production Key/);
+    fireEvent.change(keyNameInput, { target: { value: "Test Key" } });
+
+    const createButton = screen.getByTestId("create-key-button");
     fireEvent.click(createButton);
 
     await waitFor(() => {
-      expect(screen.getByText("New API Key Created")).toBeInTheDocument();
+      expect(screen.getByTestId("api-key-created-banner")).toBeInTheDocument();
     });
 
     // Click copy button
@@ -164,10 +171,7 @@ describe("SettingsPage", () => {
       expect(screen.getByText("Test Agent")).toBeInTheDocument();
     });
 
-    const keyNameInput = screen.getByPlaceholderText(/e.g., Production Key/);
-    fireEvent.change(keyNameInput, { target: { value: "Test Key" } });
-
-    const createButton = screen.getByText("Create Key");
+    const createButton = screen.getByTestId("create-key-button");
     fireEvent.click(createButton);
 
     await waitFor(() => {

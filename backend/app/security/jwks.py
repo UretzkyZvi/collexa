@@ -7,7 +7,10 @@ def _b64url_nopad(data: bytes) -> str:
 
 
 def derive_ec_p256_jwk_from_pem(
-    *, private_pem: Optional[str] = None, public_pem: Optional[str] = None, kid: Optional[str] = None
+    *,
+    private_pem: Optional[str] = None,
+    public_pem: Optional[str] = None,
+    kid: Optional[str] = None
 ) -> Optional[Dict[str, Any]]:
     """Derive an EC P-256 JWK from PEM input. Returns None if not derivable.
 
@@ -18,7 +21,9 @@ def derive_ec_p256_jwk_from_pem(
     if private_pem:
         try:
             from cryptography.hazmat.primitives.asymmetric import ec as _ec
-            from cryptography.hazmat.primitives.serialization import load_pem_private_key as _load_priv
+            from cryptography.hazmat.primitives.serialization import (
+                load_pem_private_key as _load_priv,
+            )
 
             priv = _load_priv(private_pem.encode("utf-8"), password=None)
             if not isinstance(priv, _ec.EllipticCurvePrivateKey):
@@ -31,7 +36,9 @@ def derive_ec_p256_jwk_from_pem(
     elif public_pem:
         try:
             from cryptography.hazmat.primitives.asymmetric import ec as _ec
-            from cryptography.hazmat.primitives.serialization import load_pem_public_key as _load_pub
+            from cryptography.hazmat.primitives.serialization import (
+                load_pem_public_key as _load_pub,
+            )
 
             pub = _load_pub(public_pem.encode("utf-8"))
             if not isinstance(pub, _ec.EllipticCurvePublicKey):
@@ -109,4 +116,3 @@ def ec_p256_jwk_to_public_pem(jwk: Dict[str, Any]) -> Optional[str]:
         return pem.decode("utf-8")
     except Exception:
         return None
-

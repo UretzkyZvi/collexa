@@ -13,7 +13,9 @@ router = APIRouter()
 
 
 @router.get("/agents/{agent_id}/instructions")
-async def get_instructions(agent_id: str, auth=Depends(require_auth), db: Session = Depends(get_db)):
+async def get_instructions(
+    agent_id: str, auth=Depends(require_auth), db: Session = Depends(get_db)
+):
     row = (
         db.query(models.Agent)
         .filter(models.Agent.id == agent_id, models.Agent.org_id == auth.get("org_id"))
@@ -59,12 +61,37 @@ async def get_instructions(agent_id: str, auth=Depends(require_auth), db: Sessio
         "agent_id": agent_id,
         "links": {"invoke": invoke_url, "a2a": a2a_url, "mcp": mcp_ws},
         "instructions": [
-            {"id": "n8n", "label": "n8n (HTTP Request)", "language": "text", "code": n8n_text},
-            {"id": "make", "label": "Make.com (HTTP)", "language": "text", "code": make_text},
-            {"id": "langchain_python", "label": "LangChain (Python)", "language": "python", "code": langchain_py},
-            {"id": "openai_tool_python", "label": "OpenAI/Claude Tool (Python)", "language": "python", "code": openai_tool_py},
+            {
+                "id": "n8n",
+                "label": "n8n (HTTP Request)",
+                "language": "text",
+                "code": n8n_text,
+            },
+            {
+                "id": "make",
+                "label": "Make.com (HTTP)",
+                "language": "text",
+                "code": make_text,
+            },
+            {
+                "id": "langchain_python",
+                "label": "LangChain (Python)",
+                "language": "python",
+                "code": langchain_py,
+            },
+            {
+                "id": "openai_tool_python",
+                "label": "OpenAI/Claude Tool (Python)",
+                "language": "python",
+                "code": openai_tool_py,
+            },
             {"id": "mcp", "label": "MCP Endpoint", "language": "text", "code": mcp_ws},
-            {"id": "a2a", "label": "A2A Descriptor", "language": "text", "code": a2a_url},
+            {
+                "id": "a2a",
+                "label": "A2A Descriptor",
+                "language": "text",
+                "code": a2a_url,
+            },
         ],
     }
 
@@ -83,6 +110,7 @@ async def a2a_descriptor(agent_id: str):
         "capabilities": ["invoke", "stream_logs", "list_runs"],
     }
     body = json.dumps(payload, separators=(",", ":"))
-    sig = hmac.new(secret.encode("utf-8"), body.encode("utf-8"), hashlib.sha256).hexdigest()
+    sig = hmac.new(
+        secret.encode("utf-8"), body.encode("utf-8"), hashlib.sha256
+    ).hexdigest()
     return {**payload, "alg": "HS256", "signature": sig}
-

@@ -9,6 +9,14 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 
 from app.db import models
+from app.schemas.sandbox import (
+    CreateSandboxRequest,
+    UpdateSandboxRequest,
+    SandboxResponse,
+    SandboxServiceResponse,
+    SandboxListResponse,
+    DeleteSandboxResponse,
+)
 # Lazy import to avoid importing heavy docker client in environments (like CI) that don't need it at import time.
 # Tests patch SandboxDomainService methods; importing orchestrator only when methods run prevents ModuleNotFoundError: docker.
 orchestrator = None  # type: ignore[assignment]
@@ -27,14 +35,6 @@ def _ensure_orchestrator_loaded():
         orchestrator = _orch
         SandboxRequest = _SandboxRequest
         ServiceConfig = _ServiceConfig
-from app.schemas.sandbox import (
-    CreateSandboxRequest,
-    UpdateSandboxRequest,
-    SandboxResponse,
-    SandboxServiceResponse,
-    SandboxListResponse,
-    DeleteSandboxResponse,
-)
 
 
 class SandboxDomainService:
@@ -54,7 +54,7 @@ class SandboxDomainService:
         """Create a new dynamic sandbox for an agent."""
 
         # Verify agent exists and belongs to org
-        agent = self._get_agent_or_raise(agent_id, org_id)
+        self._get_agent_or_raise(agent_id, org_id)
 
         # Convert schema to orchestrator request
         orchestrator_request = self._convert_to_orchestrator_request(request)
@@ -77,7 +77,7 @@ class SandboxDomainService:
         """Get information about a specific sandbox."""
 
         # Verify agent exists and belongs to org
-        agent = self._get_agent_or_raise(agent_id, org_id)
+        self._get_agent_or_raise(agent_id, org_id)
 
         # Get sandbox from orchestrator
         _ensure_orchestrator_loaded()
@@ -92,7 +92,7 @@ class SandboxDomainService:
         """List all sandboxes for an agent."""
 
         # Verify agent exists and belongs to org
-        agent = self._get_agent_or_raise(agent_id, org_id)
+        self._get_agent_or_raise(agent_id, org_id)
 
         # Get all active sandboxes and filter by agent
         _ensure_orchestrator_loaded()
@@ -113,7 +113,7 @@ class SandboxDomainService:
         """Update an existing sandbox."""
 
         # Verify agent exists and belongs to org
-        agent = self._get_agent_or_raise(agent_id, org_id)
+        self._get_agent_or_raise(agent_id, org_id)
 
         # Verify sandbox exists and belongs to agent
         sandbox_info = await orchestrator.get_sandbox(sandbox_id)
@@ -151,7 +151,7 @@ class SandboxDomainService:
         """Delete a sandbox and cleanup all its resources."""
 
         # Verify agent exists and belongs to org
-        agent = self._get_agent_or_raise(agent_id, org_id)
+        self._get_agent_or_raise(agent_id, org_id)
 
         # Verify sandbox exists and belongs to agent
         sandbox_info = await orchestrator.get_sandbox(sandbox_id)

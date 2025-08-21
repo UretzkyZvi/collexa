@@ -8,10 +8,9 @@ extend-exclude = [
   "venv",
 ]
 # Relax some rules for tests and scripts to keep CI green; we still run Black/mypy/pytest
-per-file-ignores = {
-  # Tests (both backend/tests and app/tests)
-  "tests/**/*.py" = ["E402", "F401", "F841", "F821", "F811"],
-  "app/tests/**/*.py" = ["E402", "F401", "F841", "F821", "F811"],
-  # Operational scripts allow imports after sys.path tweaks, and occasional unused imports
-  "scripts/**/*.py" = ["E402", "F401"],
-}
+[tool.ruff.per-file-ignores]
+# Tests (both backend/tests and app/tests)
+"tests/**/*.py" = ["E402", "F401", "F841", "F821", "F811"]
+"app/tests/**/*.py" = ["E402", "F401", "F841", "F821", "F811"]
+# Operational scripts allow imports after sys.path tweaks, and occasional unused imports
+"scripts/**/*.py" = ["E402", "F401"]

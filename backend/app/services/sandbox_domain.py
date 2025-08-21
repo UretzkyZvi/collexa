@@ -17,11 +17,13 @@ from app.schemas.sandbox import (
     SandboxListResponse,
     DeleteSandboxResponse,
 )
+
 # Lazy import to avoid importing heavy docker client in environments (like CI) that don't need it at import time.
 # Tests patch SandboxDomainService methods; importing orchestrator only when methods run prevents ModuleNotFoundError: docker.
 orchestrator = None  # type: ignore[assignment]
 SandboxRequest = None  # type: ignore[assignment]
 ServiceConfig = None  # type: ignore[assignment]
+
 
 def _ensure_orchestrator_loaded():
     global orchestrator, SandboxRequest, ServiceConfig
@@ -186,9 +188,7 @@ class SandboxDomainService:
             raise Exception("Agent not found")
         return agent
 
-    def _convert_to_orchestrator_request(
-        self, request: CreateSandboxRequest
-    ):
+    def _convert_to_orchestrator_request(self, request: CreateSandboxRequest):
         """Convert API request schema to orchestrator request."""
         _ensure_orchestrator_loaded()
         custom_configs = {}

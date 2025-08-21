@@ -83,7 +83,8 @@ jobs:
       env:
         DATABASE_URL: postgresql://testuser:testpass@localhost:5432/testdb
       run: |
-        alembic upgrade head || echo "Skipping migrations if not configured"
+        alembic upgrade head
+        alembic current -v
 
     - name: Run tests
       env:

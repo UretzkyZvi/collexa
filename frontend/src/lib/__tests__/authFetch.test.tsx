@@ -8,6 +8,9 @@ jest.mock('@stackframe/stack', () => ({
   }),
 }));
 
+// Simplify by mocking project context instead of wrapping with Providers
+jest.mock('~/hooks/project-context', () => ({ useProjectContext: () => ({ selectedProjectId: 'proj-1' }) }));
+
 describe('useAuthFetch', () => {
   it('attaches Authorization header by default', async () => {
     const { result } = renderHook(() => useAuthFetch());

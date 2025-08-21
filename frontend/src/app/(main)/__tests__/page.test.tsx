@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { Providers } from "~/test-utils/Providers";
 import HomePage from "../page";
 
 // Mock useAuthFetch
@@ -15,11 +16,11 @@ describe("HomePage", () => {
   it("renders dashboard with loading state", () => {
     mockAuthFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
 
-    render(<HomePage />);
+    render(<Providers><HomePage /></Providers>);
 
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    // Should show skeleton loading states
-    expect(screen.getAllByTestId("skeleton")).toBeTruthy();
+    // Should show skeleton loading states (query by data-slot attribute)
+    expect(document.querySelectorAll('[data-slot="skeleton"]').length).toBeGreaterThan(0);
   });
 
   it("displays metrics when data is loaded", async () => {
@@ -62,7 +63,7 @@ describe("HomePage", () => {
       }),
     });
 
-    render(<HomePage />);
+    render(<Providers><HomePage /></Providers>);
 
     // Wait for data to load
     await waitFor(() => {
@@ -70,7 +71,7 @@ describe("HomePage", () => {
     });
 
     // Check API calls metrics
-    expect(screen.getByText("150")).toBeInTheDocument(); // Total API calls
+    expect(screen.getByTestId("api-calls-total")).toHaveTextContent("150");
     expect(screen.getByText("5 errors")).toBeInTheDocument();
     expect(screen.getByText("96.7%")).toBeInTheDocument(); // Success rate
 
@@ -103,7 +104,7 @@ describe("HomePage", () => {
       }),
     });
 
-    render(<HomePage />);
+    render(<Providers><HomePage /></Providers>);
 
     await waitFor(() => {
       expect(screen.getByText("Welcome to Collexa! 🎉")).toBeInTheDocument();
@@ -119,13 +120,9 @@ describe("HomePage", () => {
 
     render(<HomePage />);
 
-    await waitFor(() => {
-      // Should still render the dashboard structure
-      expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    });
-
-    // Should show zero values when API fails
-    expect(screen.getByText("0")).toBeInTheDocument(); // Agent count fallback
+    // Wait until content switches from skeleton to final cards by waiting for the metric testid
+    const countNode = await screen.findByTestId("agents-count");
+    expect(countNode).toHaveTextContent("0");
   });
 
   it("shows performance metrics only when there is data", async () => {
@@ -146,7 +143,7 @@ describe("HomePage", () => {
       }),
     });
 
-    render(<HomePage />);
+    render(<Providers><HomePage /></Providers>);
 
     await waitFor(() => {
       expect(screen.getByText("1")).toBeInTheDocument(); // Agent count

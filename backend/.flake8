@@ -1,0 +1,11 @@
+[flake8]
+# Align flake8 with Black formatting conventions
+# - E203: Whitespace before ':' (Black-compatible)
+# - W503: Line break before binary operator (Black-compatible)
+# Relax E501 (line length) to reduce churn on long strings/URLs
+max-line-length = 120
+extend-ignore = E203, W503
+
+# Optional quality-of-life defaults
+exclude = .git, __pycache__, venv, .venv, node_modules
+

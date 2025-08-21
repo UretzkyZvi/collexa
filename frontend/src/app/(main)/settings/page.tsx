@@ -61,14 +61,15 @@ export default function SettingsPage() {
   };
 
   const createApiKey = async () => {
-    if (!selectedAgent || !keyName.trim()) return;
-    
+    if (!selectedAgent) return;
+
     setLoading(true);
     try {
+      const payload = keyName.trim() ? { name: keyName.trim() } : {};
       const response = await authFetch(`/v1/agents/${selectedAgent}/keys`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: keyName.trim() }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -142,6 +143,7 @@ export default function SettingsPage() {
                 />
               </div>
               <button
+                data-testid="create-key-button"
                 onClick={createApiKey}
                 disabled={loading}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -154,7 +156,7 @@ export default function SettingsPage() {
 
         {/* New API Key Display */}
         {newApiKey && (
-          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-md" data-testid="api-key-created-banner">
             <h3 className="font-medium text-yellow-800 mb-2">
               ⚠️ New API Key Created
             </h3>
@@ -162,7 +164,7 @@ export default function SettingsPage() {
               Copy this key now - it won't be shown again for security reasons.
             </p>
             <div className="flex gap-2">
-              <code className="flex-1 px-3 py-2 bg-white border rounded text-sm font-mono">
+              <code className="flex-1 px-3 py-2 bg-white border rounded text-sm font-mono" data-testid="api-key-value">
                 {newApiKey}
               </code>
               <button

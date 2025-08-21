@@ -158,7 +158,7 @@ export default function LogsPage() {
       <Card className="flex flex-wrap items-center gap-4 p-4">
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
-            <Switch checked={live} onCheckedChange={setLive} />
+            <Switch data-testid="live-toggle" checked={live} onCheckedChange={setLive} />
             <span className="text-sm text-muted-foreground">Live</span>
           </div>
         </div>

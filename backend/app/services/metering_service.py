@@ -7,11 +7,11 @@ to payment providers for billing purposes.
 
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
+from datetime import datetime
 from dataclasses import dataclass
 
 from app.services.billing_service import BillingService
-from app.services.budget_service import BudgetService, BudgetExceededException
+from app.services.budget_service import BudgetService
 from app.services.payment.protocol import PaymentProviderError
 from app.db import models
 import logging

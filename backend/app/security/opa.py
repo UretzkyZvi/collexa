@@ -1,8 +1,6 @@
 import httpx
-import json
 import os
 from typing import Dict, Any, Optional
-import asyncio
 
 
 class OPAPolicyEngine:

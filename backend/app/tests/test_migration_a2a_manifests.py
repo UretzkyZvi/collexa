@@ -1,3 +1,4 @@
+from sqlalchemy import create_engine, inspect
 import os
 import pytest
 
@@ -5,8 +6,6 @@ pytestmark = pytest.mark.skipif(
     not os.getenv("DATABASE_URL") or os.getenv("DATABASE_URL", "").startswith("sqlite"),
     reason="Skip: requires DATABASE_URL (Postgres) in CI",
 )
-
-from sqlalchemy import create_engine, inspect
 
 
 def test_a2a_manifests_table_exists():

@@ -39,3 +39,4 @@ backend/alembic/versions/__pycache__/
 *.swp
 *.swo
 
+backend/dev.db

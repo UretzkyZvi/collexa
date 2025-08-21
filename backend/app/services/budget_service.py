@@ -7,12 +7,11 @@ and alerting for organizations and individual agents.
 
 from typing import Optional, List, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, func
+from sqlalchemy import and_
 from datetime import datetime, timedelta
 from enum import Enum
 
 from app.db import models
-from app.core.config import settings
 import logging
 import uuid
 

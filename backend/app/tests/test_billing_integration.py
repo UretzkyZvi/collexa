@@ -6,9 +6,8 @@ usage tracking, and payment provider integration.
 """
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta
 
 from app.services.billing_service import BillingService
 from app.services.budget_service import (
@@ -134,7 +133,7 @@ class TestBillingIntegration:
     @pytest.mark.asyncio
     async def test_usage_reporting_to_provider(self):
         """Test that usage is reported to payment provider"""
-        billing_service = BillingService(self.mock_db, self.mock_provider)
+        BillingService(self.mock_db, self.mock_provider)
         metering_service = MeteringService(self.mock_db)
 
         self._setup_db_mocks()
@@ -320,8 +319,8 @@ class TestBillingIntegration:
         # Mock query operations
         mock_query = Mock()
         mock_filter = Mock()
-        mock_first = Mock()
-        mock_all = Mock()
+        Mock()
+        Mock()
 
         self.mock_db.query.return_value = mock_query
         mock_query.filter.return_value = mock_filter

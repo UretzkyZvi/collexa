@@ -6,7 +6,6 @@ custom mock services tailored to each agent's requirements.
 """
 
 import asyncio
-import json
 import tempfile
 import time
 from datetime import datetime, timedelta
@@ -15,7 +14,6 @@ from typing import Dict, List, Optional, Any
 from uuid import uuid4
 
 import docker
-import yaml
 from jinja2 import Template
 from pydantic import BaseModel
 
@@ -203,7 +201,7 @@ class SandboxOrchestrator:
                         # Prism returns 404 for root, which means it's ready
                         if response.status in [200, 404]:
                             return
-            except:
+            except BaseException:
                 pass
             await asyncio.sleep(1)
 

@@ -5,23 +5,18 @@ These tests verify the integration of APScheduler, Apprise, and Celery
 with the billing system for automated monitoring and notifications.
 """
 
+from app.services.billing.async_webhook_service import (
+    process_webhook_async,
+)
+from app.services.notifications.alert_service import AlertService, AlertSeverity
+from app.services.scheduling.budget_scheduler_service import BudgetSchedulerService
 import pytest
-from unittest.mock import Mock, patch, AsyncMock
-import asyncio
+from unittest.mock import Mock, patch
 from datetime import datetime, timedelta
 
 # Skip this suite if optional deps not installed
 pytest.importorskip("apscheduler", reason="APScheduler not installed")
 pytest.importorskip("apprise", reason="Apprise not installed")
-
-from app.services.scheduling.budget_scheduler_service import BudgetSchedulerService
-from app.services.notifications.alert_service import AlertService, AlertSeverity
-from app.services.billing.async_webhook_service import (
-    process_webhook_async,
-    send_budget_alert_async,
-    check_budget_violations_async,
-)
-from app.db import models
 
 
 class TestEnhancedBillingSystem:
@@ -207,7 +202,8 @@ class TestEnhancedBillingSystem:
                 True,
             ]
 
-            # This would normally be called by Celery, but we'll test the function directly
+            # This would normally be called by Celery, but we'll test the function
+            # directly
             with patch("app.services.billing.async_webhook_service.get_db"):
                 # First call should fail and trigger retry logic
                 try:
@@ -343,7 +339,7 @@ class TestEnhancedBillingSystem:
             ):
                 mock_session = Mock()
                 mock_query = Mock()
-                mock_filter = Mock()
+                Mock()
                 mock_session.query.return_value = mock_query
                 mock_query.all.return_value = [Mock(id=self.org_id)]
                 mock_get_db.return_value = iter([mock_session])

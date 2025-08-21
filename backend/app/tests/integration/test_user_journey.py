@@ -7,7 +7,6 @@ including authentication, agent management, sandbox creation, and execution flow
 
 import pytest
 import httpx
-from typing import Dict, Any
 
 
 class TestUserJourney:

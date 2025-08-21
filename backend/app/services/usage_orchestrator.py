@@ -12,7 +12,6 @@ import asyncio
 
 from app.services.budget.budget_enforcement_service import (
     BudgetEnforcementService,
-    BudgetExceededException,
 )
 from app.services.usage.cost_calculation_service import (
     CostCalculationService,

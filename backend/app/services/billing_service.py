@@ -5,16 +5,13 @@ This service acts as a bridge between the application's business logic
 and the payment provider, handling data persistence and provider interactions.
 """
 
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
 from app.services.payment.factory import get_payment_provider
 from app.services.payment.protocol import (
     PaymentProvider,
-    Customer,
-    Subscription,
-    Invoice,
     CheckoutSession,
     WebhookEvent,
     PaymentProviderError,
@@ -80,7 +77,8 @@ class BillingService:
             if org:
                 # Store provider-specific customer ID in org for backward compatibility
                 if self.payment_provider.get_provider_name() == "stripe":
-                    # Back-compat placeholder: store stripe customer on org if field exists
+                    # Back-compat placeholder: store stripe customer on org if field
+                    # exists
                     try:
                         org.stripe_customer_id = provider_customer.id
                     except Exception:

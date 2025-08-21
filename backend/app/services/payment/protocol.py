@@ -115,12 +115,10 @@ class PaymentProvider(ABC):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Customer:
         """Create a new customer in the payment provider"""
-        pass
 
     @abstractmethod
     async def get_customer(self, customer_id: str) -> Optional[Customer]:
         """Get customer by provider-specific ID"""
-        pass
 
     @abstractmethod
     async def update_customer(
@@ -131,7 +129,6 @@ class PaymentProvider(ABC):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Customer:
         """Update customer information"""
-        pass
 
     @abstractmethod
     async def create_checkout_session(
@@ -143,46 +140,38 @@ class PaymentProvider(ABC):
         metadata: Optional[Dict[str, Any]] = None,
     ) -> CheckoutSession:
         """Create a checkout session for subscription signup"""
-        pass
 
     @abstractmethod
     async def get_subscription(self, subscription_id: str) -> Optional[Subscription]:
         """Get subscription by provider-specific ID"""
-        pass
 
     @abstractmethod
     async def cancel_subscription(self, subscription_id: str) -> Subscription:
         """Cancel a subscription"""
-        pass
 
     @abstractmethod
     async def create_usage_record(
         self, subscription_item_id: str, quantity: int, timestamp: Optional[int] = None
     ) -> bool:
         """Record usage for metered billing"""
-        pass
 
     @abstractmethod
     async def get_invoices(self, customer_id: str, limit: int = 10) -> List[Invoice]:
         """Get customer invoices"""
-        pass
 
     @abstractmethod
     def verify_webhook_signature(
         self, payload: bytes, signature: str, secret: str
     ) -> WebhookEvent:
         """Verify webhook signature and parse event"""
-        pass
 
     @abstractmethod
     def get_provider_name(self) -> str:
         """Get provider name for logging/debugging"""
-        pass
 
     @abstractmethod
     def get_dashboard_url(self, customer_id: str) -> Optional[str]:
         """Get URL to customer dashboard (if supported)"""
-        pass
 
 
 class PaymentProviderError(Exception):
@@ -200,22 +189,14 @@ class PaymentProviderError(Exception):
 class CustomerNotFoundError(PaymentProviderError):
     """Raised when customer is not found"""
 
-    pass
-
 
 class SubscriptionNotFoundError(PaymentProviderError):
     """Raised when subscription is not found"""
-
-    pass
 
 
 class WebhookVerificationError(PaymentProviderError):
     """Raised when webhook signature verification fails"""
 
-    pass
-
 
 class PaymentProviderConfigError(PaymentProviderError):
     """Raised when provider configuration is invalid"""
-
-    pass

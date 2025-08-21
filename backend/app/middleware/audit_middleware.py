@@ -55,13 +55,12 @@ class AuditMiddleware(BaseHTTPMiddleware):
                 body = await request.body()
                 request_body = body.decode("utf-8") if body else None
                 # Re-create request with body for downstream processing
-                from starlette.requests import Request as StarletteRequest
 
-                scope = request.scope.copy()
-                receive = request.receive
+                request.scope.copy()
+                request.receive
                 # Store body for later use
                 request.state._body = request_body
-            except:
+            except BaseException:
                 pass
 
         # Process request
@@ -94,7 +93,7 @@ class AuditMiddleware(BaseHTTPMiddleware):
 
                 body = json.loads(request.state._body)
                 capability = body.get("capability")
-            except:
+            except BaseException:
                 pass
 
         # Log to database (async, don't block response)

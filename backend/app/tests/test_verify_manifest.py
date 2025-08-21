@@ -1,3 +1,6 @@
+from jose.constants import ALGORITHMS
+from jose import jws
+from app.security.jwks import derive_ec_p256_jwk_from_pem
 import os
 import sys
 import json
@@ -10,10 +13,6 @@ pytest.importorskip("jose")
 ROOT = os.path.dirname(os.path.dirname(__file__))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
-
-from app.security.jwks import derive_ec_p256_jwk_from_pem
-from jose import jws
-from jose.constants import ALGORITHMS
 
 
 @pytest.mark.skip(reason="Integration test placeholder; enable in CI with proper keys")

@@ -6,13 +6,12 @@ payment providers without changing business logic.
 """
 
 import pytest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from sqlalchemy.orm import Session
 
 from app.services.billing_service import BillingService
 from app.services.payment.factory import PaymentProviderFactory
 from app.services.payment.providers.mock_provider import MockProvider
-from app.services.payment.protocol import Customer, CheckoutSession
 from app.db import models
 
 

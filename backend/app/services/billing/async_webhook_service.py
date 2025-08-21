@@ -6,11 +6,8 @@ automatic retries, failure handling, and monitoring.
 """
 
 from celery import Celery
-from celery.exceptions import Retry
-from sqlalchemy.orm import Session
 from typing import Dict, Any
 import logging
-import json
 
 from app.services.billing.webhook_service import WebhookService
 from app.services.billing_orchestrator import BillingOrchestrator
@@ -142,7 +139,7 @@ def process_subscription_event_async(
     """
     try:
         db = next(get_db())
-        billing_orchestrator = BillingOrchestrator(db)
+        BillingOrchestrator(db)
 
         event_type = event_data.get("type")
         subscription_data = event_data.get("data", {}).get("object", {})

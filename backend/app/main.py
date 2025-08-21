@@ -16,7 +16,6 @@ from app.api.routers.sandboxes import router as sandboxes_router
 from app.api.routers.admin import router as admin_router
 from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.audit_middleware import AuditMiddleware
-from app.middleware.policy_middleware import PolicyEnforcementMiddleware
 from app.mcp import router as mcp_router
 
 app = FastAPI(title="Collexa API", version="0.1.0", lifespan=lifespan)

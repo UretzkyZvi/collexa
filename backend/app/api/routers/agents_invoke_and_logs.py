@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, Request, Query
 import time
 from starlette.responses import StreamingResponse
 from sqlalchemy.orm import Session
-from typing import Any, Dict, Optional
+from typing import Optional
 import asyncio
 import json
 import uuid
@@ -17,7 +17,6 @@ from app.observability.metrics import (
 from app.observability.logging import (
     log_agent_invocation,
     get_structured_logger,
-    set_request_context,
 )
 from app.services.usage_orchestrator import UsageOrchestrator
 from app.services.budget.budget_enforcement_service import BudgetExceededException
@@ -105,7 +104,8 @@ async def invoke_agent(
     db.commit()
     await asyncio.sleep(0.05)
 
-    # Optional cross-agent invocation demo: if capability == "cross_call" and input.target_agent is provided
+    # Optional cross-agent invocation demo: if capability == "cross_call" and
+    # input.target_agent is provided
     if capability == "cross_call":
         try:
             from app.services.agent_client import invoke_agent_http

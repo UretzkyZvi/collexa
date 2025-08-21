@@ -4,7 +4,7 @@ Structured logging utilities with request_id, org_id, agent_id context.
 
 import logging
 import json
-from typing import Dict, Any, Optional
+from typing import Optional
 from contextvars import ContextVar
 
 # Context variables for request-scoped data

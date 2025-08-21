@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 from app.services.billing_orchestrator import BillingOrchestrator
 from app.services.usage_orchestrator import UsageOrchestrator
 from app.services.billing.customer_service import CustomerService
-from app.services.billing.subscription_service import SubscriptionService
 from app.services.billing.checkout_service import CheckoutService
 from app.services.budget.budget_enforcement_service import (
     BudgetEnforcementService,

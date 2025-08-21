@@ -10,15 +10,13 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.asyncio import AsyncIOExecutor
-from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 import logging
-import asyncio
 
 from app.services.budget.budget_enforcement_service import BudgetEnforcementService
 from app.services.usage_orchestrator import UsageOrchestrator
-from app.services.budget_service import BudgetService, BudgetPeriod
+from app.services.budget_service import BudgetPeriod
 from app.db.session import get_db
 from app.db import models
 from app.core.config import settings

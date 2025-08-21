@@ -1,3 +1,5 @@
+from app.security.jwks import derive_ec_p256_jwk_from_pem, derive_jwks_from_env
+import pytest
 import os
 import os
 import sys
@@ -6,11 +8,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-import pytest
 
 pytest.importorskip("cryptography")
-
-from app.security.jwks import derive_ec_p256_jwk_from_pem, derive_jwks_from_env
 
 
 def test_derive_jwk_from_invalid_pem_returns_none():

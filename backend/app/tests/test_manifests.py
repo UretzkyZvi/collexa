@@ -1,6 +1,8 @@
-import os
-import json
 import pytest
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
 
 pytestmark = pytest.mark.skip(
     reason="FastAPI/cryptography not installed in this local runner; covered in CI"

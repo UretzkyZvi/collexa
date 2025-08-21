@@ -5,7 +5,7 @@ This service handles the business logic for sandbox management,
 acting as a bridge between the API layer and the orchestrator.
 """
 
-from typing import List, Optional
+from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.db import models
@@ -19,7 +19,8 @@ from app.schemas.sandbox import (
 )
 
 # Lazy import to avoid importing heavy docker client in environments (like CI) that don't need it at import time.
-# Tests patch SandboxDomainService methods; importing orchestrator only when methods run prevents ModuleNotFoundError: docker.
+# Tests patch SandboxDomainService methods; importing orchestrator only
+# when methods run prevents ModuleNotFoundError: docker.
 orchestrator = None  # type: ignore[assignment]
 SandboxRequest = None  # type: ignore[assignment]
 ServiceConfig = None  # type: ignore[assignment]
@@ -83,7 +84,8 @@ class SandboxDomainService:
 
         # Get sandbox from orchestrator
         _ensure_orchestrator_loaded()
-        sandbox_info = await orchestrator.get_sandbox(sandbox_id)  # type: ignore[union-attr]
+        # type: ignore[union-attr]
+        sandbox_info = await orchestrator.get_sandbox(sandbox_id)
         if not sandbox_info or sandbox_info.agent_id != agent_id:
             raise Exception("Sandbox not found")
 
@@ -162,7 +164,8 @@ class SandboxDomainService:
 
         # Delete sandbox using orchestrator
         _ensure_orchestrator_loaded()
-        success = await orchestrator.delete_sandbox(sandbox_id)  # type: ignore[union-attr]
+        # type: ignore[union-attr]
+        success = await orchestrator.delete_sandbox(sandbox_id)
         if not success:
             raise Exception("Failed to delete sandbox")
 

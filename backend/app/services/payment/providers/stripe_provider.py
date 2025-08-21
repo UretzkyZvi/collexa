@@ -10,7 +10,6 @@ from typing import Dict, Any, Optional, List
 from app.services.payment.protocol import (
     PaymentProvider,
     Customer,
-    PaymentMethod,
     Subscription,
     Invoice,
     CheckoutSession,

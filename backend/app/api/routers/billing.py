@@ -28,7 +28,7 @@ class WebhookRequest(BaseModel):
 async def create_checkout_session(
     request: CheckoutRequest,
     org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Create a checkout session for subscription signup.
@@ -47,13 +47,10 @@ async def create_checkout_session(
             org_id=org_id,
             plan_id=request.plan_id,
             success_url=success_url,
-            cancel_url=cancel_url
+            cancel_url=cancel_url,
         )
 
-        return {
-            "checkout_session_id": checkout_session.id,
-            "url": checkout_session.url
-        }
+        return {"checkout_session_id": checkout_session.id, "url": checkout_session.url}
 
     except PaymentProviderError as e:
         logger.error(f"Payment provider error creating checkout session: {e}")
@@ -64,10 +61,7 @@ async def create_checkout_session(
 
 
 @router.post("/billing/webhooks")
-async def handle_billing_webhook(
-    request: Request,
-    use_async: bool = True
-):
+async def handle_billing_webhook(request: Request, use_async: bool = True):
     """
     Handle billing webhooks from payment providers.
 
@@ -77,18 +71,24 @@ async def handle_billing_webhook(
     try:
         # Get raw body and signature header
         body = await request.body()
-        signature = request.headers.get("stripe-signature") or request.headers.get("paypal-signature") or ""
+        signature = (
+            request.headers.get("stripe-signature")
+            or request.headers.get("paypal-signature")
+            or ""
+        )
 
         if use_async:
             # Queue for asynchronous processing with Celery
-            from app.services.billing.async_webhook_service import queue_webhook_processing
+            from app.services.billing.async_webhook_service import (
+                queue_webhook_processing,
+            )
 
             task_id = queue_webhook_processing(body, signature, "stripe")
 
             return {
                 "status": "queued",
                 "task_id": task_id,
-                "message": "Webhook queued for processing"
+                "message": "Webhook queued for processing",
             }
         else:
             # Synchronous processing (fallback)
@@ -122,35 +122,27 @@ async def get_webhook_task_status(task_id: str):
 
         task = celery_app.AsyncResult(task_id)
 
-        if task.state == 'PENDING':
+        if task.state == "PENDING":
             response = {
                 "task_id": task_id,
                 "status": "pending",
-                "message": "Task is waiting to be processed"
+                "message": "Task is waiting to be processed",
             }
-        elif task.state == 'PROGRESS':
+        elif task.state == "PROGRESS":
             response = {
                 "task_id": task_id,
                 "status": "processing",
-                "message": "Task is being processed"
+                "message": "Task is being processed",
             }
-        elif task.state == 'SUCCESS':
-            response = {
-                "task_id": task_id,
-                "status": "success",
-                "result": task.result
-            }
-        elif task.state == 'FAILURE':
-            response = {
-                "task_id": task_id,
-                "status": "failed",
-                "error": str(task.info)
-            }
+        elif task.state == "SUCCESS":
+            response = {"task_id": task_id, "status": "success", "result": task.result}
+        elif task.state == "FAILURE":
+            response = {"task_id": task_id, "status": "failed", "error": str(task.info)}
         else:
             response = {
                 "task_id": task_id,
                 "status": task.state,
-                "message": f"Task state: {task.state}"
+                "message": f"Task state: {task.state}",
             }
 
         return response
@@ -162,13 +154,14 @@ async def get_webhook_task_status(task_id: str):
 
 @router.get("/billing/subscription")
 async def get_subscription_status(
-    org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    org_id: str = Depends(get_current_org_id), db: Session = Depends(get_db)
 ):
     """Get current subscription status for the organization"""
     try:
         billing_orchestrator = BillingOrchestrator(db)
-        billing_status = await billing_orchestrator.get_organization_billing_status(org_id)
+        billing_status = await billing_orchestrator.get_organization_billing_status(
+            org_id
+        )
 
         if not billing_status["has_billing"] or not billing_status["subscription"]:
             return {"status": "no_subscription"}
@@ -180,7 +173,7 @@ async def get_subscription_status(
             "plan_id": subscription["plan_id"],
             "current_period_start": subscription["current_period_start"],
             "current_period_end": subscription["current_period_end"],
-            "provider": billing_status["provider"]
+            "provider": billing_status["provider"],
         }
 
     except Exception as e:
@@ -190,8 +183,7 @@ async def get_subscription_status(
 
 @router.delete("/billing/subscription")
 async def cancel_subscription(
-    org_id: str = Depends(get_current_org_id),
-    db: Session = Depends(get_db)
+    org_id: str = Depends(get_current_org_id), db: Session = Depends(get_db)
 ):
     """Cancel the organization's subscription"""
     try:

@@ -4,6 +4,7 @@ Shared HTTPX AsyncClient with connection pooling and sane timeouts.
 Use get_http_client() to obtain the singleton client.
 Start/stop handled from app.startup lifespan.
 """
+
 from typing import Optional
 import httpx
 
@@ -26,4 +27,3 @@ async def close_http_client():
     if _client is not None:
         await _client.aclose()
         _client = None
-

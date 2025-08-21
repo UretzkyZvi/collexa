@@ -20,7 +20,4 @@ except ImportError:
 # from .paypal_provider import PayPalProvider
 # from .square_provider import SquareProvider
 
-__all__ = [
-    "StripeProvider",
-    "MockProvider"
-]
+__all__ = ["StripeProvider", "MockProvider"]

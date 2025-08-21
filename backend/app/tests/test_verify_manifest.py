@@ -28,9 +28,13 @@ AwEHoUQDQgAEQ8Z9dNfY9b8O+2wYtH8Xq3a2r5f0u7vg6v1q8cX8VQ0v7f+f6cV6
     monkeypatch.setenv("MANIFEST_KEY_ID", "test-kid")
 
     manifest = {"agent_id": "a1", "version": "1.0", "capabilities": []}
-    sig = jws.sign(payload=json.dumps(manifest), key=priv_pem, algorithm=ALGORITHMS.ES256, headers={"kid": "test-kid"})
+    sig = jws.sign(
+        payload=json.dumps(manifest),
+        key=priv_pem,
+        algorithm=ALGORITHMS.ES256,
+        headers={"kid": "test-kid"},
+    )
     assert sig
 
     jwk = derive_ec_p256_jwk_from_pem(private_pem=priv_pem, kid="test-kid")
     assert jwk
-

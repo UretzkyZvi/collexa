@@ -10,8 +10,15 @@ from app.api.deps import require_team
 from app.db.session import get_db
 from app.db import models
 from app.streams import queue_for_agent, queue_for_run
-from app.observability.metrics import increment_agent_invocations, record_agent_invocation_duration
-from app.observability.logging import log_agent_invocation, get_structured_logger, set_request_context
+from app.observability.metrics import (
+    increment_agent_invocations,
+    record_agent_invocation_duration,
+)
+from app.observability.logging import (
+    log_agent_invocation,
+    get_structured_logger,
+    set_request_context,
+)
 from app.services.usage_orchestrator import UsageOrchestrator
 from app.services.budget.budget_enforcement_service import BudgetExceededException
 
@@ -35,7 +42,9 @@ async def invoke_agent(
     usage_orchestrator = UsageOrchestrator(db)
     try:
         # Estimate cost for this invocation (basic invocation + estimated tokens)
-        estimated_input_tokens = len(str(payload)) // 4  # Rough estimate: 4 chars per token
+        estimated_input_tokens = (
+            len(str(payload)) // 4
+        )  # Rough estimate: 4 chars per token
         estimated_output_tokens = 100  # Conservative estimate
 
         # This will raise BudgetExceededException if budget would be exceeded
@@ -43,7 +52,7 @@ async def invoke_agent(
             org_id=org_id,
             agent_id=agent_id,
             estimated_input_tokens=estimated_input_tokens,
-            estimated_output_tokens=estimated_output_tokens
+            estimated_output_tokens=estimated_output_tokens,
         )
     except BudgetExceededException as e:
         logger.warning(f"Budget exceeded for org {org_id}, agent {agent_id}: {e}")
@@ -54,8 +63,8 @@ async def invoke_agent(
                 "message": f"Budget limit exceeded. Current usage would exceed limit.",
                 "budget_id": e.budget_id,
                 "limit_cents": e.limit_cents,
-                "current_usage_cents": e.current_usage_cents
-            }
+                "current_usage_cents": e.current_usage_cents,
+            },
         )
 
     # Set observability context (request_id should be set by middleware)
@@ -100,6 +109,7 @@ async def invoke_agent(
     if capability == "cross_call":
         try:
             from app.services.agent_client import invoke_agent_http
+
             target_agent = (payload.get("input") or {}).get("target_agent")
             if target_agent:
                 # Propagate auth context for intra-org call
@@ -140,10 +150,12 @@ async def invoke_agent(
             metadata={
                 "capability": capability,
                 "duration_ms": (time.time() - start_time) * 1000,
-                "status": "succeeded"
-            }
+                "status": "succeeded",
+            },
         )
-        logger.info(f"Recorded usage for invocation {run_id}: {actual_input_tokens} input, {actual_output_tokens} output tokens")
+        logger.info(
+            f"Recorded usage for invocation {run_id}: {actual_input_tokens} input, {actual_output_tokens} output tokens"
+        )
     except Exception as e:
         # Don't fail the request if usage recording fails
         logger.error(f"Failed to record usage for invocation {run_id}: {e}")
@@ -154,7 +166,9 @@ async def invoke_agent(
     record_agent_invocation_duration(agent_id, org_id, duration_ms)
 
     # Structured logging
-    log_agent_invocation(logger, agent_id, capability, "succeeded", duration_ms, run_id=run_id)
+    log_agent_invocation(
+        logger, agent_id, capability, "succeeded", duration_ms, run_id=run_id
+    )
 
     return {
         "agent_id": agent_id,
@@ -261,4 +275,3 @@ async def stream_run_logs(
                 pass
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
-

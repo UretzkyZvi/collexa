@@ -49,7 +49,10 @@ async def issue_agent_key(
 
 @router.delete("/agents/{agent_id}/keys/{key_id}")
 async def revoke_agent_key(
-    agent_id: str, key_id: str, auth=Depends(require_team), db: Session = Depends(get_db)
+    agent_id: str,
+    key_id: str,
+    auth=Depends(require_team),
+    db: Session = Depends(get_db),
 ):
     row = (
         db.query(models.AgentKey)
@@ -66,4 +69,3 @@ async def revoke_agent_key(
     row.revoked_at = datetime.utcnow()
     db.commit()
     return {"ok": True}
-

@@ -245,6 +245,7 @@ def send_budget_alert_async(
     try:
         from app.services.notifications.alert_service import alert_service
         from app.services.notifications.alert_service import AlertSeverity
+        from datetime import datetime
 
         success = False
 

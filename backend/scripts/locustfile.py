@@ -59,5 +59,6 @@ class AgentUser(HttpUser):
 def _(parser):
     parser.add_argument("--run-time", type=str, default=os.getenv("RUN_TIME", "1m"))
     parser.add_argument("--users", type=int, default=int(os.getenv("USERS", "5")))
-    parser.add_argument("--spawn-rate", type=float, default=float(os.getenv("SPAWN_RATE", "2")))
-
+    parser.add_argument(
+        "--spawn-rate", type=float, default=float(os.getenv("SPAWN_RATE", "2"))
+    )

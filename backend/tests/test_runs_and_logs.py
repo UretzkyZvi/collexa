@@ -26,8 +26,14 @@ def test_invoke_and_stream(client, monkeypatch):
 
     monkeypatch.setattr(deps, "require_team", fake_require_team)
     monkeypatch.setattr(deps, "require_auth", fake_require_auth)
-    monkeypatch.setattr(stack_auth, "verify_stack_access_token", lambda t: {"id": "u1", "selectedTeamId": "o1"})
-    monkeypatch.setattr(stack_auth, "verify_team_membership", lambda team, tok: {"id": team})
+    monkeypatch.setattr(
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "u1", "selectedTeamId": "o1"},
+    )
+    monkeypatch.setattr(
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
+    )
 
     # Create agent row directly via endpoint
     r = client.post(

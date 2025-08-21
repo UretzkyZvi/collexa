@@ -18,10 +18,12 @@ from app.services.billing.async_webhook_service import celery_app
 
 if __name__ == "__main__":
     # Start Celery worker
-    celery_app.start([
-        'worker',
-        '--loglevel=info',
-        '--concurrency=4',
-        '--queues=celery',
-        '--hostname=billing-worker@%h'
-    ])
+    celery_app.start(
+        [
+            "worker",
+            "--loglevel=info",
+            "--concurrency=4",
+            "--queues=celery",
+            "--hostname=billing-worker@%h",
+        ]
+    )

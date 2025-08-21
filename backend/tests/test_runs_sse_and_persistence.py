@@ -22,8 +22,14 @@ def fake_auth(monkeypatch):
 
     monkeypatch.setattr(deps, "require_team", fake_require_team)
     monkeypatch.setattr(deps, "require_auth", fake_require_auth)
-    monkeypatch.setattr(stack_auth, "verify_stack_access_token", lambda t: {"id": "u1", "selectedTeamId": "o1"})
-    monkeypatch.setattr(stack_auth, "verify_team_membership", lambda team, tok: {"id": team})
+    monkeypatch.setattr(
+        stack_auth,
+        "verify_stack_access_token",
+        lambda t: {"id": "u1", "selectedTeamId": "o1"},
+    )
+    monkeypatch.setattr(
+        stack_auth, "verify_team_membership", lambda team, tok: {"id": team}
+    )
 
 
 def test_invoke_persists_logs_and_output_ordered(client, fake_auth):
@@ -89,7 +95,7 @@ def test_sse_per_run_emits_log_and_complete(client, fake_auth):
             # Handle both string and bytes
             line_str = line.decode("utf-8") if isinstance(line, bytes) else line
             if line_str.startswith("data: "):
-                data = line_str[len("data: "):]
+                data = line_str[len("data: ") :]
                 try:
                     obj = json.loads(data)
                     t = obj.get("type")

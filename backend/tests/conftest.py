@@ -15,6 +15,7 @@ def _ensure_tables():
     try:
         from app.db.session import Base, engine
         from app.db import models  # noqa: F401 ensure models are registered
+
         Base.metadata.create_all(bind=engine)
         yield
     finally:
@@ -27,11 +28,7 @@ def _ensure_tables():
 @pytest.fixture
 def mock_auth():
     """Mock authentication that returns valid org/user info."""
-    return {
-        "org_id": "test-org",
-        "user_id": "test-user",
-        "selectedTeamId": "test-org"
-    }
+    return {"org_id": "test-org", "user_id": "test-user", "selectedTeamId": "test-org"}
 
 
 @pytest.fixture
@@ -47,4 +44,3 @@ def mock_db():
     mock.first.return_value = None
     mock.count.return_value = 0
     return mock
-

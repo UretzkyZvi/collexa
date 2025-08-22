@@ -1,12 +1,15 @@
 # Phase 2 Checklist (Milestone-by-Milestone Acceptance Criteria)
 
-## 🚀 Phase 2 Status: IN PROGRESS (M.1 COMPLETE ✅)
+## 🚀 Phase 2 Status: STRATEGIC PIVOT TO CORE INTELLIGENCE (M.1 COMPLETE ✅)
 
-Phase 2 focuses on interoperability, security hardening, billing, and reproducibility. It builds directly on the completed Phase 1 PoC and moves the platform toward enterprise readiness and cross-agent collaboration.
+**STRATEGIC PIVOT**: Phase 2 now prioritizes core intelligent agent capabilities over billing infrastructure to deliver the revolutionary self-bootstrapping, continuously learning agents described in our vision.
+
+Phase 2 focuses on interoperability, security hardening, **autonomous learning**, and **self-bootstrapping agents**. It builds directly on the completed Phase 1 PoC and moves toward the core differentiating capabilities that make agents truly intelligent.
 
 - Target Window: Months 3–4
-- KPIs: cross‑agent invocation p50 < 2s; reproducible runs with signed logs
-- Carryovers from Phase 1: payment provider integration; builder stub (optional)
+- **NEW KPIs**: Agents successfully self-bootstrap from prompts; measurable learning improvement over time; cross-agent knowledge sharing
+- **Deprioritized**: Payment provider integration (moved to Phase 3)
+- **New Focus**: Self-bootstrapping, continuous learning, collaborative intelligence
 
 ### 🎉 **M.1 COMPLETE**: Performance & Reliability Foundation ✅
 
@@ -36,14 +39,26 @@ Phase 2 focuses on interoperability, security hardening, billing, and reproducib
 - **[Phase 2 Dependencies](./phase2-dependencies.md)**: Open-source library recommendations with licenses, integration complexity, and risks
 - **[Phase 2 Integration Examples](./phase2-integration-examples.md)**: FastAPI code stubs and minimal integration examples for priority libraries
 
-### �📌 Planned Milestones
-- Milestone H: Interoperability Core (MCP/A2A + Tool Sharing + Manifests + Reputation)
-- Milestone I: Workspace UI & Organization Settings
-- Milestone J: Advanced Security (RBAC/ABAC via OPA, SSO)
-- Milestone N: Agent Sandbox Environments & Autonomous Learning
-- Milestone K: Billing & Budgets (Payment Provider Integration)
+### 📌 Updated Milestone Execution Order
+**Strategic Priority**: Core Intelligence First, Infrastructure Second
+
+**✅ COMPLETED FOUNDATION:**
+- Milestone H: Interoperability Core (MCP/A2A + Tool Sharing + Manifests + Reputation) ✅
+- Milestone J: Advanced Security (RBAC/ABAC via OPA, SSO) ✅
+- Milestone N.1: Agent Sandbox Environments (Dynamic Mock Mode) ✅
+- Milestone M.1: Performance & Reliability Foundation ✅
+
+**🎯 CURRENT PRIORITY - CORE INTELLIGENCE:**
+- **Milestone N.2**: Autonomous Learning Cycle Implementation 🔄
+- **Milestone AB.1**: Agent Builder v1 (Self-Bootstrapping from Natural Language) 🔄
+- **Milestone DSPy.1**: DSPy Integration for Prompt Optimization 🔄
+
+**📋 SUPPORTING INFRASTRUCTURE:**
+- Milestone I: Workspace UI & Organization Settings (Learning Monitoring)
 - Milestone L: Reproducibility & Signed Logs
-- Milestone M: Performance & Reliability (p50 < 2s)
+
+**⏸️ DEPRIORITIZED TO PHASE 3:**
+- Milestone K: Billing & Budgets (Payment Provider Integration) - **Moved to Phase 3**
 
 ---
 
@@ -187,7 +202,93 @@ Acceptance Tests
 - [ ] Capability assessment stored and visible via GET /v1/agents/{id}; UI shows competency badge
 - [ ] Resetting a sandbox clears state but preserves provenance logs and assessments
 
-## Milestone K — Billing & Budgets (Payment Provider Integration)
+## Milestone N.2 — Autonomous Learning Cycle Implementation
+
+Dependencies
+- Milestone N.1 (Dynamic Sandbox System) ✅ COMPLETE
+- Milestone J.1 (Security policies for safe autonomous operations) ✅ COMPLETE
+
+**Key Libraries** (see [phase2-dependencies.md](./phase2-dependencies.md#milestone-n--agent-sandbox-environments))
+- DSPy (Apache 2.0) - Autonomous learning loops and prompt optimization
+- MLflow (Apache 2.0) - Learning progress tracking and metrics
+- DeepEval (Apache 2.0) - Capability assessment rubrics and evaluation
+- scikit-learn (BSD-3-Clause) - Learning outcome analysis and improvement detection
+
+Tasks
+- [ ] **Autonomous Learning Loop**: read docs/specs → attempt tasks → analyze errors → refine prompts/tools → retry until proficiency
+- [ ] **Progress Tracking**: record sandbox_runs with learning outcomes, improvement metrics, and competency scores
+- [ ] **Capability Assessment**: rubric-based evaluation of agent performance with proficiency thresholds
+- [ ] **Learning Plans**: curriculum generation from documentation, specs, and common task patterns
+- [ ] **Error Analysis**: structured analysis of failures to identify improvement opportunities
+- [ ] **Knowledge Integration**: incorporate learnings into agent capabilities and prompt optimization
+
+Acceptance Tests
+- [ ] Agent completes autonomous learning cycle: reads documentation → attempts tasks → improves over iterations
+- [ ] Learning progress measurably improves task success rates over time (baseline → improved performance)
+- [ ] Capability assessment accurately reflects agent competency levels with rubric-based scoring
+- [ ] Learning plans generate appropriate curriculum based on target system documentation
+- [ ] Error analysis produces actionable insights that lead to capability improvements
+
+## Milestone AB.1 — Agent Builder v1 (Self-Bootstrapping from Natural Language)
+
+Dependencies
+- Milestone H.1 (MCP/A2A protocols for capability advertisement) ✅ COMPLETE
+- Milestone N.1 (Sandbox environments for safe agent testing) ✅ COMPLETE
+
+**Key Libraries**
+- LangChain (MIT) - Natural language processing and prompt engineering
+- Pydantic (MIT) - Agent blueprint schema validation and serialization
+- Jinja2 (BSD-3-Clause) - Instructions Pack template generation
+- spaCy (MIT) - Natural language understanding for brief parsing
+
+Tasks
+- [ ] **Natural Language Brief Parser**: parse prompts like "Become a UX designer specializing in mobile apps"
+- [ ] **Agent Blueprint Generation**: derive role, capabilities, objectives, constraints from parsed brief
+- [ ] **Capability Kit Selection**: select appropriate tools and capabilities from registry based on role requirements
+- [ ] **Instructions Pack Generator**: create specialized prompts, system messages, and capability configurations
+- [ ] **Agent Deployment Pipeline**: instantiate agent with generated configuration and validate functionality
+- [ ] **Specialization Validation**: verify agent performs role-appropriate tasks and exhibits expected capabilities
+
+Acceptance Tests
+- [ ] Successfully parses natural language briefs and extracts role, domain, objectives, and constraints
+- [ ] Generated agent blueprint accurately reflects intended specialization and capabilities
+- [ ] Capability kit selection includes relevant tools and excludes inappropriate ones for the role
+- [ ] Instructions Pack enables agent to perform role-specific tasks effectively
+- [ ] End-to-end: "Become a UX designer" → functional agent that can perform UX research, wireframing, usability testing
+- [ ] Agent specialization is measurably different from generic agent (role-appropriate responses and capabilities)
+
+## Milestone DSPy.1 — DSPy Integration for Prompt Optimization
+
+Dependencies
+- Milestone N.2 (Autonomous learning infrastructure) - can develop in parallel
+- Milestone AB.1 (Agent Builder for prompt generation) - can develop in parallel
+
+**Key Libraries**
+- DSPy (Apache 2.0) - Prompt optimization and learning loops
+- OpenTelemetry (Apache 2.0) - Metrics collection for optimization feedback
+- Redis (BSD-3-Clause) - Caching optimized prompts and learning state
+
+Tasks
+- [ ] **DSPy Framework Integration**: integrate DSPy within sandbox environments for safe prompt optimization
+- [ ] **Optimization Loops**: implement learning loops that improve prompts based on task outcomes and feedback
+- [ ] **Metrics Collection**: track prompt performance, success rates, and improvement trajectories
+- [ ] **Prompt Versioning**: maintain history of prompt evolution and performance comparisons
+- [ ] **Integration with Agent Builder**: optimize generated prompts from Agent Builder using DSPy techniques
+- [ ] **Learning State Persistence**: save and restore optimization progress across sessions
+
+Acceptance Tests
+- [ ] DSPy optimization loops measurably improve prompt performance over iterations
+- [ ] Optimized prompts show better task success rates compared to baseline prompts
+- [ ] Prompt versioning maintains history and enables rollback to previous versions
+- [ ] Integration with Agent Builder produces better specialized prompts through optimization
+- [ ] Learning state persists across sandbox resets and agent sessions
+- [ ] Optimization process respects safety constraints and doesn't degrade into harmful outputs
+
+## Milestone K — Billing & Budgets ⏸️ DEPRIORITIZED TO PHASE 3
+
+**Status**: ⏸️ **DEPRIORITIZED** - Moved to Phase 3 to focus on core intelligent agent capabilities
+
+**Rationale**: Payment infrastructure is commodity functionality. Our strategic priority is proving the revolutionary self-bootstrapping and continuously learning agent capabilities that differentiate our platform. Billing can be implemented after we validate the core value proposition.
 
 Dependencies
 - Phase 1 backlog item; Milestone I (Budgets UI)
@@ -198,14 +299,14 @@ Dependencies
 - APScheduler (MIT) - Scheduled budget checks and threshold alerts
 - OpenMeter (Apache 2.0) - Usage metering pipeline and aggregation
 
-Tasks
+Tasks (Deferred to Phase 3)
 - [ ] Payment provider customer creation on signup; store payment_customer_id in orgs
 - [ ] Checkout flow for paid plans; webhooks for subscription lifecycle (created/updated/canceled)
 - [ ] Metering webhook(s): post usage from runs to the payment provider (or internal ledger) with cost tokens/cents
 - [ ] Budget enforcement: soft/hard caps at org/agent level; alerts via email/webhook
 - [ ] Admin UI: plan status, payment method, invoices
 
-Acceptance Tests
+Acceptance Tests (Deferred to Phase 3)
 - [ ] New org triggers payment provider customer; ID stored; webhook verifies signature
 - [ ] Successful checkout updates plan in DB; cancel/delinquent reflected within 5 min
 - [ ] Over‑budget invoke returns 402/429 as configured; alert sent and logged
@@ -283,9 +384,9 @@ Acceptance Tests
 - [ ] Jest suites pass in CI; coverage maintained or improved
 - [ ] E2E smoke passes in CI on PRs; failures block merge
 
-## Current Sprint (Phase 2 continuation — M.1 COMPLETE ✅)
+## Current Sprint (Phase 2 Strategic Pivot — CORE INTELLIGENCE FIRST)
 
-### 🎉 **COMPLETED IN THIS SPRINT**
+### 🎉 **COMPLETED FOUNDATION**
 - [x] **M.1 COMPLETE**: Performance & Reliability Foundation ✅
   - [x] **M.1-01**: Locust performance baselines (single & cross-agent) ✅
   - [x] **M.1-02**: HTTP client pooling and timeouts ✅
@@ -296,31 +397,68 @@ Acceptance Tests
 - [x] **N.1 COMPLETE**: Agent Sandbox Environments - dynamic mock mode with template-based customization ✅
 - [x] I.1 Budgets UI scaffold and persistence (org/agent) — implemented (list + create)
 
-### 🔄 **IN PROGRESS**
-- [ ] K.1 Payment provider: customer + checkout + webhooks (happy path)
+### 🎯 **CURRENT PRIORITY - CORE INTELLIGENCE**
+- [ ] **N.2**: Autonomous Learning Cycle Implementation (read docs → attempt tasks → analyze errors → refine)
+- [ ] **AB.1**: Agent Builder v1 (Self-Bootstrapping from Natural Language prompts)
+- [ ] **DSPy.1**: DSPy Integration for Prompt Optimization
 
-## Next Sprint (Phase 2 continuation — M.1+ & Other Milestones)
+### ⏸️ **STRATEGIC DEPRIORITIZATION**
+- [ ] ~~K.1 Payment provider~~ → **Moved to Phase 3** (focus on core capabilities first)
 
-### **M.1+ Performance & Reliability (Advanced)**
-- [ ] **M.1-03**: Cache hot descriptors/manifests (fastapi-cache2) - Issue #53
-- [ ] **M.1-04**: Circuit breakers for cross-agent dependencies - Issue #54
-- [ ] **M.1-05**: Idempotency keys and retry policy - Issue #55
-- [ ] **M.1-06**: asyncpg via SQLAlchemy async engine - Issue #56
+## Next Sprint (Phase 2 Core Intelligence Implementation)
 
-### **Other Milestones**
-- [ ] **N.2**: Learning plan + autonomous learning loop + progress tracking
-- [ ] I.1 Workspace: projects/workspaces selector & scoping; Logs filters + replay link; Org Settings placeholders
-- [ ] K.1 Payment provider: customer + checkout + webhooks (happy path)
+### **🧠 PRIORITY 1: Core Intelligence Capabilities**
+- [ ] **N.2**: Autonomous Learning Cycle Implementation
+  - [ ] Learning loop: read docs → attempt tasks → analyze errors → refine prompts/tools
+  - [ ] Progress tracking with measurable improvement metrics
+  - [ ] Capability assessment with rubric-based evaluation
+- [ ] **AB.1**: Agent Builder v1 (Self-Bootstrapping)
+  - [ ] Natural language brief parser ("Become a UX designer...")
+  - [ ] Agent blueprint generation (role, capabilities, objectives)
+  - [ ] Instructions Pack generation with specialized prompts
+- [ ] **DSPy.1**: DSPy Integration for Prompt Optimization
+  - [ ] DSPy framework integration within sandbox environments
+  - [ ] Optimization loops for prompt improvement based on outcomes
 
-## Backlog (Shortlist)
+### **📊 SUPPORTING INFRASTRUCTURE**
+- [ ] **I.1 Workspace**: Learning monitoring UI (progress dashboards, capability evolution tracking)
+- [ ] **M.1+ Performance** (Lower Priority):
+  - [ ] **M.1-03**: Cache hot descriptors/manifests - Issue #53
+  - [ ] **M.1-04**: Circuit breakers for cross-agent dependencies - Issue #54
+  - [ ] **M.1-05**: Idempotency keys and retry policy - Issue #55
+  - [ ] **M.1-06**: asyncpg via SQLAlchemy async engine - Issue #56
 
-- [ ] Agent Builder v1: parse brief → blueprint (role, capabilities) with mock kit selection
-- [ ] Additional SSO providers (Azure AD, Okta) beyond initial
+### **⏸️ DEFERRED TO PHASE 3**
+- [ ] ~~K.1 Payment provider~~ → **Phase 3** (after core capabilities proven)
+
+## Backlog (Updated Priorities)
+
+### **🎯 ELEVATED TO ACTIVE DEVELOPMENT**
+- [x] ~~Agent Builder v1~~ → **Promoted to Milestone AB.1** (Self-Bootstrapping from Natural Language)
+
+### **🧠 CORE INTELLIGENCE ENHANCEMENTS (Phase 3)**
+- [ ] **Cross-Agent Learning Networks**: Agents learn from each other's experiences via MCP/A2A
+- [ ] **LoRA Fine-tuning Pipeline**: Lightweight model adaptation based on learning outcomes
+- [ ] **Collaborative Intelligence**: Networks of evolving expertise and knowledge sharing
+- [ ] **Advanced Capability Assessment**: Multi-dimensional competency rubrics and certification
+
+### **🔧 INFRASTRUCTURE ENHANCEMENTS (Phase 3+)**
+- [ ] **Payment Provider Integration** (moved from K.1): Stripe/billing infrastructure
+- [ ] Additional SSO providers (Azure AD, Okta) beyond initial OIDC/SAML
 - [ ] Reputation signals: peer endorsements and anomaly detection
 - [ ] Matrix/WebRTC exploration for real‑time collaboration
 
 ## Notes
 
-- Keep Phase 2 focused on interoperability, governance, and commercial readiness.
-- Defer broad observability dashboards and SDKs to Phase 3/4 unless required by KPIs.
+### **🎯 Strategic Pivot Rationale**
+- **Core Value First**: Self-bootstrapping and continuously learning agents are our unique differentiator
+- **Validation Before Monetization**: Prove revolutionary capabilities before building commodity billing infrastructure
+- **Infrastructure Ready**: Sandbox environments, security policies, and interoperability provide foundation for intelligent agents
+- **Market Differentiation**: Focus on what makes us special - agents that truly learn, adapt, and improve themselves
+
+### **📋 Implementation Guidelines**
+- Keep Phase 2 focused on **core intelligence capabilities** and supporting infrastructure
+- Defer billing/payment infrastructure to Phase 3 after core capabilities are validated
+- Prioritize learning loops, self-bootstrapping, and collaborative intelligence over commercial features
+- Maintain small PRs and comprehensive testing for all learning capabilities
 

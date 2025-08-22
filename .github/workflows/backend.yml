@@ -22,6 +22,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install black ruff mypy pytest
+          # Core Intelligence Dependencies
+          pip install dspy-ai mlflow deepeval scikit-learn
+          # Learning Infrastructure Dependencies
+          pip install langchain spacy redis
       - name: Ruff
         working-directory: backend
         run: ruff check .
@@ -33,5 +37,9 @@ jobs:
         run: mypy app
       - name: Pytest
         working-directory: backend
-        run: pytest -q
+        run: |
+          # Run all tests including learning capabilities
+          pytest -q
+          # Run learning-specific tests with coverage
+          pytest -q --cov=app.services.learning --cov=app.services.agent_builder tests/learning/ || echo "Learning tests not yet implemented"
 

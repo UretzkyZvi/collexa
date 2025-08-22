@@ -25,7 +25,7 @@ export default function RunDetailsPage() {
       const res = await authFetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/runs/${runId}/replay`, { method: "POST" });
       if (!res.ok) throw new Error("Replay not available");
       // Optional: navigate to the new run id or show a toast
-    } catch (_e) {
+    } catch {
       // Placeholder behavior for now
       console.warn("Replay endpoint not available yet.");
     } finally {

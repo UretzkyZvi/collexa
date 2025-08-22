@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Discussion Forum
+    url: https://github.com/UretzkyZvi/collexa/discussions
+    about: Ask questions and discuss ideas about the Collexa platform
+  - name: 📚 Documentation
+    url: https://github.com/UretzkyZvi/collexa/blob/main/README.md
+    about: Read the project documentation and roadmap
+  - name: 🎯 Phase 2 Checklist
+    url: https://github.com/UretzkyZvi/collexa/blob/main/docs/phase2-checklist.md
+    about: Track Phase 2 milestone progress and acceptance criteria

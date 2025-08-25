@@ -49,6 +49,7 @@ Phase 2 focuses on interoperability, security hardening, **autonomous learning**
 - Milestone M.1: Performance & Reliability Foundation ✅
 
 **🎯 CURRENT PRIORITY - CORE INTELLIGENCE:**
+- **Milestone SC.1**: Semantic Compression Foundation (Context Window Optimization) 🔄
 - **Milestone N.2**: Autonomous Learning Cycle Implementation 🔄
 - **Milestone AB.1**: Agent Builder v1 (Self-Bootstrapping from Natural Language) 🔄
 - **Milestone DSPy.1**: DSPy Integration for Prompt Optimization 🔄
@@ -202,11 +203,47 @@ Acceptance Tests
 - [ ] Capability assessment stored and visible via GET /v1/agents/{id}; UI shows competency badge
 - [ ] Resetting a sandbox clears state but preserves provenance logs and assessments
 
+## Milestone SC.1 — Semantic Compression Foundation (Context Window Optimization)
+
+Dependencies
+- Phase 1: Basic agent infrastructure and MCP protocols ✅ COMPLETE
+- Core intelligence dependencies (DSPy, MLflow, LangChain, spaCy) ✅ INSTALLED
+
+**Key Libraries** (see [semantic-compression-strategy.md](./semantic-compression-strategy.md))
+- MessagePack (MIT) - Binary serialization for 2-5x compression
+- Zstandard (BSD-2-Clause) - Dictionary-based compression for 5-15x gains
+- Protocol Buffers (BSD-3-Clause) - Structured data compression for agent specifications
+- spaCy (MIT) - Semantic pattern extraction and natural language processing
+- Faiss (MIT) - Vector compression and similarity search for massive context libraries
+- scikit-learn (BSD-3-Clause) - Clustering and dimensionality reduction for example compression
+
+**Revolutionary Impact**: Transcend context window limitations through semantic compression languages that achieve 5-10x information density while preserving meaning. This enables our core intelligence milestones to operate with unprecedented context depth and historical memory.
+
+Tasks
+- [ ] **SC.1-01**: Basic Compression Infrastructure (MessagePack + Zstandard with custom dictionaries) - Issue #67
+- [ ] **SC.1-02**: Learning State Language (LSL) for autonomous learning session compression - Issue #68
+- [ ] **SC.1-03**: Agent Definition Language (ADL) for natural language brief compression - Issue #69
+- [ ] **SC.1-04**: Optimization Pattern Language (OPL) for DSPy training example compression - Issue #70
+- [ ] **SC.1-05**: Hierarchical Context Manager with compression-aware memory allocation - Issue #71
+- [ ] **SC.1-06**: Bidirectional Translation System with semantic fidelity validation - Issue #TBD
+- [ ] **SC.1-07**: Integration with MLflow for compression efficiency tracking - Issue #TBD
+- [ ] **SC.1-08**: Vector-based Context Retrieval using Faiss for massive context libraries - Issue #TBD
+
+Acceptance Tests
+- [ ] **Compression Ratios**: Achieve 5-10x compression for semantic content with >95% fidelity
+- [ ] **Learning Session Compression**: 500-token learning sessions compress to <100 tokens
+- [ ] **Agent Brief Compression**: Complex natural language briefs compress to structured 20-token representations
+- [ ] **Training Example Compression**: 1000+ DSPy examples fit in 20K token budget
+- [ ] **Context Retrieval**: Sub-100ms retrieval of relevant contexts from compressed libraries
+- [ ] **Bidirectional Fidelity**: >95% semantic similarity between original and decompressed content
+- [ ] **Integration**: All core intelligence milestones (N.2, AB.1, DSPy.1) use compression for 10x context efficiency
+
 ## Milestone N.2 — Autonomous Learning Cycle Implementation
 
 Dependencies
 - Milestone N.1 (Dynamic Sandbox System) ✅ COMPLETE
 - Milestone J.1 (Security policies for safe autonomous operations) ✅ COMPLETE
+- Milestone SC.1 (Semantic Compression for context efficiency) 🔄 IN PROGRESS
 
 **Key Libraries** (see [phase2-dependencies.md](./phase2-dependencies.md#milestone-n--agent-sandbox-environments))
 - DSPy (Apache 2.0) - Autonomous learning loops and prompt optimization
@@ -216,11 +253,13 @@ Dependencies
 
 Tasks
 - [ ] **Autonomous Learning Loop**: read docs/specs → attempt tasks → analyze errors → refine prompts/tools → retry until proficiency
+- [ ] **Compressed Learning Memory**: use LSL to store 10x more learning history in same context window
 - [ ] **Progress Tracking**: record sandbox_runs with learning outcomes, improvement metrics, and competency scores
 - [ ] **Capability Assessment**: rubric-based evaluation of agent performance with proficiency thresholds
 - [ ] **Learning Plans**: curriculum generation from documentation, specs, and common task patterns
 - [ ] **Error Analysis**: structured analysis of failures to identify improvement opportunities
 - [ ] **Knowledge Integration**: incorporate learnings into agent capabilities and prompt optimization
+- [ ] **Context-Efficient Documentation Processing**: use semantic compression for large codebase learning
 
 Acceptance Tests
 - [ ] Agent completes autonomous learning cycle: reads documentation → attempts tasks → improves over iterations
@@ -234,6 +273,7 @@ Acceptance Tests
 Dependencies
 - Milestone H.1 (MCP/A2A protocols for capability advertisement) ✅ COMPLETE
 - Milestone N.1 (Sandbox environments for safe agent testing) ✅ COMPLETE
+- Milestone SC.1 (Semantic Compression for brief processing) 🔄 IN PROGRESS
 
 **Key Libraries**
 - LangChain (MIT) - Natural language processing and prompt engineering
@@ -243,9 +283,11 @@ Dependencies
 
 Tasks
 - [ ] **Natural Language Brief Parser**: parse prompts like "Become a UX designer specializing in mobile apps"
+- [ ] **Compressed Brief Processing**: use ADL to handle complex briefs within context limits
 - [ ] **Agent Blueprint Generation**: derive role, capabilities, objectives, constraints from parsed brief
 - [ ] **Capability Kit Selection**: select appropriate tools and capabilities from registry based on role requirements
 - [ ] **Instructions Pack Generator**: create specialized prompts, system messages, and capability configurations
+- [ ] **Template-Based Generation**: use compressed templates for efficient Instructions Pack creation
 - [ ] **Agent Deployment Pipeline**: instantiate agent with generated configuration and validate functionality
 - [ ] **Specialization Validation**: verify agent performs role-appropriate tasks and exhibits expected capabilities
 
@@ -262,6 +304,7 @@ Acceptance Tests
 Dependencies
 - Milestone N.2 (Autonomous learning infrastructure) - can develop in parallel
 - Milestone AB.1 (Agent Builder for prompt generation) - can develop in parallel
+- Milestone SC.1 (Semantic Compression for training example efficiency) 🔄 IN PROGRESS
 
 **Key Libraries**
 - DSPy (Apache 2.0) - Prompt optimization and learning loops
@@ -270,11 +313,13 @@ Dependencies
 
 Tasks
 - [ ] **DSPy Framework Integration**: integrate DSPy within sandbox environments for safe prompt optimization
+- [ ] **Compressed Training Examples**: use OPL to fit 1000+ examples in 20K token budget
 - [ ] **Optimization Loops**: implement learning loops that improve prompts based on task outcomes and feedback
 - [ ] **Metrics Collection**: track prompt performance, success rates, and improvement trajectories
 - [ ] **Prompt Versioning**: maintain history of prompt evolution and performance comparisons
 - [ ] **Integration with Agent Builder**: optimize generated prompts from Agent Builder using DSPy techniques
 - [ ] **Learning State Persistence**: save and restore optimization progress across sessions
+- [ ] **Context-Efficient Optimization**: use semantic compression for massive optimization history
 
 Acceptance Tests
 - [ ] DSPy optimization loops measurably improve prompt performance over iterations
@@ -398,6 +443,7 @@ Acceptance Tests
 - [x] I.1 Budgets UI scaffold and persistence (org/agent) — implemented (list + create)
 
 ### 🎯 **CURRENT PRIORITY - CORE INTELLIGENCE**
+- [ ] **SC.1**: Semantic Compression Foundation (Context Window Optimization - REVOLUTIONARY BREAKTHROUGH)
 - [ ] **N.2**: Autonomous Learning Cycle Implementation (read docs → attempt tasks → analyze errors → refine)
 - [ ] **AB.1**: Agent Builder v1 (Self-Bootstrapping from Natural Language prompts)
 - [ ] **DSPy.1**: DSPy Integration for Prompt Optimization
@@ -408,6 +454,12 @@ Acceptance Tests
 ## Next Sprint (Phase 2 Core Intelligence Implementation)
 
 ### **🧠 PRIORITY 1: Core Intelligence Capabilities**
+- [ ] **SC.1**: Semantic Compression Foundation (REVOLUTIONARY BREAKTHROUGH)
+  - [ ] Basic compression infrastructure (MessagePack + Zstandard)
+  - [ ] Learning State Language (LSL) for 10x learning session compression
+  - [ ] Agent Definition Language (ADL) for natural language brief compression
+  - [ ] Optimization Pattern Language (OPL) for DSPy training example compression
+  - [ ] Hierarchical context manager with compression-aware memory allocation
 - [ ] **N.2**: Autonomous Learning Cycle Implementation
   - [ ] Learning loop: read docs → attempt tasks → analyze errors → refine prompts/tools
   - [ ] Progress tracking with measurable improvement metrics

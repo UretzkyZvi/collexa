@@ -12,6 +12,8 @@ from contextlib import asynccontextmanager
 from app.services.scheduling.budget_scheduler_service import budget_scheduler
 from app.services.notifications.alert_service import alert_service
 from app.services.http_client import close_http_client
+from app.services.compression.dictionary_trainer import ZstdDictionaryTrainer
+from app.services.compression.basic_engine import BasicCompressionEngine
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,28 @@ async def lifespan(app):
         # Initialize and start the budget scheduler
         await budget_scheduler.start()
         logger.info("Budget scheduler started successfully")
+
+        # Train a small zstd dictionary from a seed corpus and attach engine to app.state
+        try:
+            seed_samples = [
+                b"L47:FastAPI{routing->L:0.85,DI->D:0.85,async_db->M:0.85,T:8/10,E:auth:3,db_timeout:2}",
+                b"L48:FastAPI{routing->L:0.88,DI->M:0.90,async_db->M:0.92,T:9/10,E:auth:1,db_timeout:1}",
+                b"L49:FastAPI{routing->M:0.91,DI->M:0.91,async_db->M:0.93,T:10/10,E:auth:0,db_timeout:0}",
+                b"AGENT:FS_DEV|CAP:React:5,TS:5,CSS:4,Node:5,Express:5,PG:4,API:5,Docker:4,CICD:4,AWS:4|CON:Security,Scale,Maintain",
+                b"CoT:+0.12:step_by_step+format|FS:+0.07:5ex+edge_cases|SC:+0.11:multi_path+consensus",
+            ]
+            trainer = ZstdDictionaryTrainer(dict_size=1024)
+            dictionary = trainer.train(seed_samples * 40)  # replicate to ensure enough data
+            compressor = trainer.build_compressor(dictionary)
+            app.state.compression_engine = BasicCompressionEngine(
+                zstd_compressor=compressor,
+                zstd_dict=dictionary,
+            )
+            logger.info("Compression engine initialized with trained zstd dictionary")
+        except Exception as e:
+            # Proceed without blocking startup; engine will fall back to msgpack/noop
+            app.state.compression_engine = BasicCompressionEngine()
+            logger.warning(f"Compression engine initialized without dictionary: {e}")
 
         # Test notification channels
         channels = alert_service.get_configured_channels()

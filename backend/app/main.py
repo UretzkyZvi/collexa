@@ -16,6 +16,7 @@ from app.api.routers.sandboxes import router as sandboxes_router
 from app.api.routers.admin import router as admin_router
 from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.audit_middleware import AuditMiddleware
+from app.middleware.compression_middleware import CompressionMiddleware
 from app.mcp import router as mcp_router
 
 app = FastAPI(title="Collexa API", version="0.1.0", lifespan=lifespan)
@@ -30,6 +31,8 @@ app.add_middleware(
 )
 
 # Middleware stack (order matters - last added runs first)
+# Compression is opt-in and safe; place before audit/auth so it can decode bodies
+app.add_middleware(CompressionMiddleware)
 app.add_middleware(AuditMiddleware)
 # TODO: Enable PolicyEnforcementMiddleware when OPA is configured
 # app.add_middleware(PolicyEnforcementMiddleware)
@@ -54,4 +57,7 @@ app.include_router(metrics_router, prefix="/v1")
 app.include_router(agents_manifests_router, prefix="/v1")
 app.include_router(sandboxes_router, prefix="/v1")
 app.include_router(admin_router, prefix="/v1")
+from app.api.routers.learning import router as learning_router
+# Dev-only learning inspection endpoint: keep outside /v1 to bypass AuthMiddleware
+app.include_router(learning_router)
 app.include_router(mcp_router)

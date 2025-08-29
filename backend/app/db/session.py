@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy.pool import StaticPool
+from typing import Optional
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///./dev.db"
@@ -39,7 +40,7 @@ def get_db():
         db.close()
 
 
-def set_rls_for_session(db, org_id: str | None):
+def set_rls_for_session(db, org_id: Optional[str]):
     """Optional: set a local session variable for Postgres RLS policies.
     Safe to call even if org_id is None or if DB doesn't have the setting.
     """

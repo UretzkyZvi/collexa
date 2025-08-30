@@ -53,6 +53,42 @@ async def lifespan(app):
         except Exception as e:
             # Proceed without blocking startup; engine will fall back to msgpack/noop
             app.state.compression_engine = BasicCompressionEngine()
+        # Register policy evaluator for tools (OPA adapter) in non-mock modes
+        try:
+            from app.services.learning.tools.base import set_policy_evaluator
+            from app.security.opa import get_opa_engine
+            import anyio
+
+            def _sync_opa_tool_gate(tool_name: str, action: str, sandbox_mode: str, context: dict) -> bool:
+                # Allow mock mode to follow local allowlist logic (handled in policy_gate)
+                if sandbox_mode == "mock":
+                    return True
+
+                # Evaluate via OPA for emulated/connected
+                async def _eval():
+                    engine = get_opa_engine()
+                    # Map tool action to a capability string; simple convention for now
+                    capability = f"tool:{tool_name}:{action}".lower()
+                    user_id = str(context.get("user_id") or "system")
+                    org_id = str(context.get("org_id") or context.get("team_id") or "default")
+                    agent_id = str(context.get("agent_id") or "unknown")
+                    return await engine.can_invoke_capability(
+                        user_id=user_id,
+                        org_id=org_id,
+                        agent_id=agent_id,
+                        capability=capability,
+                    )
+
+                try:
+                    return bool(anyio.run(_eval))  # type: ignore[arg-type]
+                except Exception:
+                    return False  # fail-closed
+
+            set_policy_evaluator(_sync_opa_tool_gate)
+        except Exception:
+            # Do not block startup if OPA/tool wiring is not available
+            pass
+
             logger.warning(f"Compression engine initialized without dictionary: {e}")
 
         # Test notification channels

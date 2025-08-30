@@ -51,7 +51,9 @@ def policy_gate(tool_name: str, action: str, sandbox_mode: str, context: Dict[st
 
     - In mock mode, default to deny except allow-listed local actions.
     - If a policy evaluator is registered (e.g., OPA), delegate the decision.
+    - In non-mock modes, fail-closed (deny) when no evaluator is configured.
     """
+    # Delegation to pluggable evaluator (e.g., OPA sync adapter)
     if _policy_evaluator is not None:
         try:
             return bool(_policy_evaluator(tool_name, action, sandbox_mode, context))
@@ -59,7 +61,7 @@ def policy_gate(tool_name: str, action: str, sandbox_mode: str, context: Dict[st
             return False
 
     if sandbox_mode == "mock":
-        # Allow only explicitly safe actions; HTTP restricted to sandbox proxy.
+        # Allow only explicitly safe actions; mock tools are stubbed internally.
         if tool_name == "http" and action in {"GET", "POST"}:
             return True
         if tool_name == "fs" and action in {"read", "write"}:
@@ -68,6 +70,7 @@ def policy_gate(tool_name: str, action: str, sandbox_mode: str, context: Dict[st
             return True  # mocked by design
         # Disallow everything else in mock mode by default
         return False
-    # Default allow for non-mock until OPA integration is wired
-    return True
+
+    # Non-mock (emulated/connected): no evaluator configured -> deny by default
+    return False
 

@@ -112,6 +112,8 @@ This document identifies open-source libraries with permissive licenses (MIT, Ap
 - Integration: Medium
 - Risks: Policy authoring learning curve; bundle distribution
 
+- Status: OPA evaluator wired at startup for tools policy gate in emulated/connected modes (see PR [#74](https://github.com/UretzkyZvi/collexa/pull/74), Issue [#73](https://github.com/UretzkyZvi/collexa/issues/73)).
+
 **Cerbos** ([GitHub](https://github.com/cerbos/cerbos))
 - License: Apache 2.0
 - Tasks: Fine-grained authZ (RBAC/ABAC) with versioned policies and audit

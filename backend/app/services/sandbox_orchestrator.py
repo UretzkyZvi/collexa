@@ -389,5 +389,11 @@ class TemplateLoader:
         return endpoint_map.get(service_type, [])
 
 
-# Global orchestrator instance
-orchestrator = SandboxOrchestrator()
+# Lazy global orchestrator accessor to avoid Docker client init at import time
+_orchestrator: SandboxOrchestrator | None = None
+
+def get_orchestrator() -> SandboxOrchestrator:
+    global _orchestrator
+    if _orchestrator is None:
+        _orchestrator = SandboxOrchestrator()
+    return _orchestrator

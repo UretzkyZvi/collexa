@@ -234,8 +234,8 @@ Acceptance Tests
 - [ ] **Learning Session Compression**: 500-token learning sessions compress to <100 tokens
 - [ ] **Agent Brief Compression**: Complex natural language briefs compress to structured 20-token representations
 - [ ] **Training Example Compression**: 1000+ DSPy examples fit in 20K token budget
-- [ ] **Context Retrieval**: Sub-100ms retrieval of relevant contexts from compressed libraries
-- [ ] **Bidirectional Fidelity**: >95% semantic similarity between original and decompressed content
+- [ ] **Context Retrieval**: Sub-100ms retrieval of relevant contexts from compressed libraries (baseline tests added; see PR [#74](https://github.com/UretzkyZvi/collexa/pull/74))
+- [ ] **Bidirectional Fidelity**: >95% semantic similarity between original and decompressed content (roundtrip tests added; see PR [#74](https://github.com/UretzkyZvi/collexa/pull/74))
 - [ ] **Integration**: All core intelligence milestones (N.2, AB.1, DSPy.1) use compression for 10x context efficiency
 
 ## Milestone N.2 — Autonomous Learning Cycle Implementation
@@ -254,9 +254,11 @@ Dependencies
 Tasks
 - [x] **Autonomous Learning Loop (Skeleton)**: SC.1-driven retrieval/assembly, tool registry integration (mock-safe), LSL recording, dev iterate endpoint
 - [x] **Compressed Learning Memory**: record recent LSL sessions via dev helper and in-memory storage
-- [x] **Tooling Expansion (Mock)**: add WebSocket, GraphQL, Search adapters; update registry; record tool usage in LSL
-- [ ] **Policy Gate (OPA)**: integrate OPA policy evaluation for emulated/connected modes
-- [ ] **Progress Tracking**: record sandbox_runs with learning outcomes, improvement metrics, and competency scores
+- [x] **Tooling Expansion (Mock)**: add WebSocket, GraphQL, Search adapters; update registry; record tool usage in LSL — Issue [#72](https://github.com/UretzkyZvi/collexa/issues/72) ✅
+- [x] **Policy Gate (OPA)**: tool-level gate wired to OPA for emulated/connected; request middleware feature-flag pending — Issue [#73](https://github.com/UretzkyZvi/collexa/issues/73) (PR [#74](https://github.com/UretzkyZvi/collexa/pull/74))
+- [x] **Progress Tracking (initial)**: sandbox_runs persistence hook + tests; improvement metrics/competency pending
+- [ ] **Optional**: Enable request-level PolicyEnforcementMiddleware behind a feature flag once OPA is configured (PR [#74](https://github.com/UretzkyZvi/collexa/pull/74))
+
 - [ ] **Capability Assessment**: rubric-based evaluation of agent performance with proficiency thresholds
 - [ ] **Learning Plans**: curriculum generation from documentation, specs, and common task patterns
 - [ ] **Error Analysis**: structured analysis of failures to identify improvement opportunities
@@ -276,29 +278,31 @@ Dependencies
 - Milestone H.1 (MCP/A2A protocols for capability advertisement) ✅ COMPLETE
 - Milestone N.1 (Sandbox environments for safe agent testing) ✅ COMPLETE
 - Milestone SC.1 (Semantic Compression for brief processing) 🔄 IN PROGRESS
+- OPA Tool Gate wired at startup for non-mock tool invocations (Issue [#73](https://github.com/UretzkyZvi/collexa/issues/73), PR [#74](https://github.com/UretzkyZvi/collexa/pull/74)) ✅
 
 **Key Libraries**
-- LangChain (MIT) - Natural language processing and prompt engineering
-- Pydantic (MIT) - Agent blueprint schema validation and serialization
+- Pydantic (MIT) - Agent blueprint schema validation and serialization (ADL v1)
 - Jinja2 (BSD-3-Clause) - Instructions Pack template generation
-- spaCy (MIT) - Natural language understanding for brief parsing
+- spaCy (MIT) - Natural language understanding for brief parsing (v0 heuristic acceptable)
+- SC.1 Compression Engine (zstd+msgpack) - compact storage/transport of blueprints and instructions
 
 Tasks
 - [ ] **Natural Language Brief Parser**: parse prompts like "Become a UX designer specializing in mobile apps"
-- [ ] **Compressed Brief Processing**: use ADL to handle complex briefs within context limits
+- [ ] **Compressed Brief Processing**: use ADL v1 to handle complex briefs within context limits
 - [ ] **Agent Blueprint Generation**: derive role, capabilities, objectives, constraints from parsed brief
-- [ ] **Capability Kit Selection**: select appropriate tools and capabilities from registry based on role requirements
-- [ ] **Instructions Pack Generator**: create specialized prompts, system messages, and capability configurations
-- [ ] **Template-Based Generation**: use compressed templates for efficient Instructions Pack creation
-- [ ] **Agent Deployment Pipeline**: instantiate agent with generated configuration and validate functionality
+- [ ] **Capability Kit Selection**: select appropriate tools and capabilities from registry based on role requirements (derive OPA/A2A capability keys)
+- [ ] **Instructions Pack Generator**: create specialized prompts, system messages, and capability configurations (Jinja2)
+- [ ] **Template-Based Generation**: use compressed templates for efficient Instructions Pack creation (SC.1)
+- [ ] **Preview + Validate**: POST /v1/agents/builder/preview (AB1_ENABLED), optional mock-mode validation via N.2 iteration
+- [ ] **Create + Persist**: POST /v1/agents/builder/create persists ADL/instructions/manifest JSON (adl_version on agents)
 - [ ] **Specialization Validation**: verify agent performs role-appropriate tasks and exhibits expected capabilities
 
 Acceptance Tests
 - [ ] Successfully parses natural language briefs and extracts role, domain, objectives, and constraints
-- [ ] Generated agent blueprint accurately reflects intended specialization and capabilities
-- [ ] Capability kit selection includes relevant tools and excludes inappropriate ones for the role
-- [ ] Instructions Pack enables agent to perform role-specific tasks effectively
-- [ ] End-to-end: "Become a UX designer" → functional agent that can perform UX research, wireframing, usability testing
+- [ ] Generated agent blueprint accurately reflects intended specialization and capabilities (adl_version == "v1")
+- [ ] Capability kit selection includes relevant tools and excludes inappropriate ones for the role (keys like tool:http:get)
+- [ ] Instructions Pack enables agent to perform role-specific tasks effectively (templates render without errors)
+- [ ] End-to-end: "Become a UX designer" → functional agent that can perform UX research, wireframing, usability testing (mock validation path)
 - [ ] Agent specialization is measurably different from generic agent (role-appropriate responses and capabilities)
 
 ## Milestone DSPy.1 — DSPy Integration for Prompt Optimization
@@ -447,6 +451,8 @@ Acceptance Tests
 ### 🎯 **CURRENT PRIORITY - CORE INTELLIGENCE**
 - [ ] **SC.1**: Semantic Compression Foundation (Context Window Optimization - REVOLUTIONARY BREAKTHROUGH)
 - [ ] **N.2**: Autonomous Learning Cycle Implementation (read docs → attempt tasks → analyze errors → refine)
+  - Tool policy gate wired to OPA for emulated/connected (Issue [#73](https://github.com/UretzkyZvi/collexa/issues/73), PR [#74](https://github.com/UretzkyZvi/collexa/pull/74))
+  - Initial progress tracking to sandbox_runs + tests
 - [ ] **AB.1**: Agent Builder v1 (Self-Bootstrapping from Natural Language prompts)
 - [ ] **DSPy.1**: DSPy Integration for Prompt Optimization
 

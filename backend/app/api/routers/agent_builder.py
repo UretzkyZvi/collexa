@@ -43,8 +43,8 @@ async def preview_agent(
     manifest = produce_manifest(caps)
 
     response: Dict[str, Any] = {
-        "blueprint": bp.model_json_dict(),
-        "instructions": instr.model_json_dict(),
+        "blueprint": bp.model_dump(mode="json"),
+        "instructions": instr.model_dump(mode="json"),
         "manifest": manifest,
     }
 
@@ -109,8 +109,8 @@ async def create_agent_from_blueprint(
 
     return {
         "agent_id": agent_id,
-        "blueprint": bp.model_json_dict(),
-        "instructions": instr.model_json_dict(),
+        "blueprint": bp.model_dump(mode="json"),
+        "instructions": instr.model_dump(mode="json"),
         "manifest": manifest,
     }
 

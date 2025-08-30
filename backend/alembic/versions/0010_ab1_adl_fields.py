@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "0010_ab1_adl_fields"
-down_revision = "0009_previous"
+down_revision = "0008_billing_tables"
 branch_labels = None
 depends_on = None
 

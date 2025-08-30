@@ -104,6 +104,10 @@ def run_learning_iteration(
     agent_brief: Optional[CompressedAgentBrief] = None,
     history: Optional[List[CompressedLearningSession]] = None,
     examples: Optional[List[CompressedOptimizationTrace]] = None,
+    *,
+    db: Any | None = None,
+    org_id: str | None = None,
+    sandbox_id: str | None = None,
 ) -> CompressedLearningSession:
     """Execute a single learning iteration over the first task in cfg.tasks.
 
@@ -158,6 +162,23 @@ def run_learning_iteration(
                 "assembled_bytes": float(assembled.get("total_bytes", 0)),
                 "success": 1.0 if success else 0.0,
             })
+    except Exception:
+        pass
+
+    # Optional progress persistence (sandbox_runs)
+    try:
+        from app.services.learning.progress import record_iteration as record_progress
+        record_progress(
+            agent_id=cfg.agent_id,
+            sandbox_mode=cfg.sandbox_mode,
+            task_name=task,
+            success=success,
+            errors=errors,
+            tool_usage=tool_usage,
+            db=db,
+            org_id=org_id,
+            sandbox_id=sandbox_id,
+        )
     except Exception:
         pass
 

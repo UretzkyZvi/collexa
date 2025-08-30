@@ -28,8 +28,10 @@ def test_response_opt_in_compression_header(client):
     from app.main import app as fastapi_app
     from app.middleware.compression_middleware import CompressionMiddleware
 
-    # Ensure middleware added once for test context
-    if not any(isinstance(m, CompressionMiddleware) for m in getattr(fastapi_app, "user_middleware", [])):
+    # Ensure middleware added once for test context (avoid adding after app start)
+    um = getattr(fastapi_app, "user_middleware", [])
+    already = any(getattr(m, "cls", None) is CompressionMiddleware for m in um)
+    if not already and fastapi_app.middleware_stack is None:
         fastapi_app.add_middleware(CompressionMiddleware)
 
     # Call a simple JSON endpoint with header to accept compression

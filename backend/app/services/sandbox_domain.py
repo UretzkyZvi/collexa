@@ -30,12 +30,12 @@ def _ensure_orchestrator_loaded():
     global orchestrator, SandboxRequest, ServiceConfig
     if orchestrator is None:
         from app.services.sandbox_orchestrator import (
-            orchestrator as _orch,
+            get_orchestrator,
             SandboxRequest as _SandboxRequest,
             ServiceConfig as _ServiceConfig,
         )
 
-        orchestrator = _orch
+        orchestrator = get_orchestrator()
         SandboxRequest = _SandboxRequest
         ServiceConfig = _ServiceConfig
 

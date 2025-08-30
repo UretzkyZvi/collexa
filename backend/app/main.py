@@ -18,6 +18,7 @@ from app.middleware.auth_middleware import AuthMiddleware
 from app.middleware.audit_middleware import AuditMiddleware
 from app.middleware.compression_middleware import CompressionMiddleware
 from app.mcp import router as mcp_router
+import os
 
 app = FastAPI(title="Collexa API", version="0.1.0", lifespan=lifespan)
 
@@ -60,4 +61,9 @@ app.include_router(admin_router, prefix="/v1")
 from app.api.routers.learning import router as learning_router
 # Dev-only learning inspection endpoint: keep outside /v1 to bypass AuthMiddleware
 app.include_router(learning_router)
+# Agent Builder (AB.1) endpoints behind feature flag
+if os.getenv("AB1_ENABLED", "true").lower() == "true":
+    from app.api.routers.agent_builder import router as agent_builder_router
+    app.include_router(agent_builder_router, prefix="/v1")
+
 app.include_router(mcp_router)

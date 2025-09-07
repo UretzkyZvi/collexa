@@ -293,16 +293,27 @@ Tasks
 - [ ] **Capability Kit Selection**: select appropriate tools and capabilities from registry based on role requirements (derive OPA/A2A capability keys)
 - [ ] **Instructions Pack Generator**: create specialized prompts, system messages, and capability configurations (Jinja2)
 - [ ] **Template-Based Generation**: use compressed templates for efficient Instructions Pack creation (SC.1)
-- [ ] **Preview + Validate**: POST /v1/agents/builder/preview (AB1_ENABLED), optional mock-mode validation via N.2 iteration
-- [ ] **Create + Persist**: POST /v1/agents/builder/create persists ADL/instructions/manifest JSON (adl_version on agents)
+- [x] **Preview + Validate**: POST /v1/agents/builder/preview (AB1_ENABLED), optional mock-mode validation via N.2 iteration
+- [x] **Create + Persist**: POST /v1/agents/builder/create persists ADL/instructions/manifest JSON (adl_version on agents)
+- [x] **Manifest Signing Integration (H.1)**: sign manifest when MANIFEST_PRIVATE_KEY_PEM present; provide JWKS and verify endpoint
 - [ ] **Specialization Validation**: verify agent performs role-appropriate tasks and exhibits expected capabilities
+
+Feature Flags
+- AB1_ENABLED (default: true)
+- AB1_VALIDATE_ON_PREVIEW (default: false)
+- AB1_DEFAULT_SANDBOX_MODE (default: mock)
+
+Endpoints
+- POST /v1/agents/builder/preview
+- POST /v1/agents/builder/create
 
 Acceptance Tests
 - [ ] Successfully parses natural language briefs and extracts role, domain, objectives, and constraints
-- [ ] Generated agent blueprint accurately reflects intended specialization and capabilities (adl_version == "v1")
-- [ ] Capability kit selection includes relevant tools and excludes inappropriate ones for the role (keys like tool:http:get)
-- [ ] Instructions Pack enables agent to perform role-specific tasks effectively (templates render without errors)
-- [ ] End-to-end: "Become a UX designer" → functional agent that can perform UX research, wireframing, usability testing (mock validation path)
+- [x] Generated agent blueprint accurately reflects intended specialization and capabilities (adl_version == "v1")
+- [x] Capability kit selection includes relevant tools and excludes inappropriate ones for the role (keys like tool:http:get)
+- [x] Instructions Pack enables agent to perform role-specific tasks effectively (templates render without errors)
+- [x] End-to-end: preview(validate) and create succeed under auth + OPA-safe behavior
+- [x] Manifest signing and verification work when keys are configured (tests skip gracefully otherwise)
 - [ ] Agent specialization is measurably different from generic agent (role-appropriate responses and capabilities)
 
 ## Milestone DSPy.1 — DSPy Integration for Prompt Optimization

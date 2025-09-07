@@ -26,6 +26,9 @@ def test_preview_builder_validate(monkeypatch):
     data = resp.json()
     assert data["blueprint"]["adl_version"] == "v1"
     assert data["validation"]["status"] == "ok"
+    # Manifest present; signature fields may be None if no key configured
+    assert "manifest" in data
+    assert "signature" in data
 
 
 def test_create_builder(monkeypatch):

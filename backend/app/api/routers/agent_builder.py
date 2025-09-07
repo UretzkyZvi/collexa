@@ -41,11 +41,26 @@ async def preview_agent(
     tools, caps = select_capability_kit(bp)
     instr = render_instructions(bp, tools)
     manifest = produce_manifest(caps)
+# Sign manifest if possible (preview only returns manifest + signature info)
+try:
+    from app.services.manifest_signing import sign_manifest_if_possible
+    signed = sign_manifest_if_possible({**manifest, "agent_id": agent_id})
+    manifest = signed.get("manifest", manifest)
+    signature = signed.get("signature")
+    key_id = signed.get("key_id")
+    alg = signed.get("alg")
+except Exception:
+    signature = None
+    key_id = None
+    alg = None
 
     response: Dict[str, Any] = {
         "blueprint": bp.model_dump(mode="json"),
         "instructions": instr.model_dump(mode="json"),
         "manifest": manifest,
+        "signature": signature,
+        "key_id": key_id,
+        "alg": alg,
     }
 
     validate = bool(payload.get("validate")) or AB1_VALIDATE_ON_PREVIEW
@@ -76,6 +91,18 @@ async def create_agent_from_blueprint(
     tools, caps = select_capability_kit(bp)
     instr = render_instructions(bp, tools)
     manifest = produce_manifest(caps)
+    # Sign + persist manifest if possible
+    try:
+        from app.services.manifest_signing import sign_manifest_if_possible
+        signed = sign_manifest_if_possible({**manifest, "agent_id": agent_id})
+        manifest = signed.get("manifest", manifest)
+        signature = signed.get("signature")
+        key_id = signed.get("key_id")
+        alg = signed.get("alg")
+    except Exception:
+        signature = None
+        key_id = None
+        alg = None
 
     row = models.Agent(
         id=agent_id,
@@ -98,7 +125,7 @@ async def create_agent_from_blueprint(
                 "v": bp.adl_version,
                 "bp": bp.model_dump(mode="json"),
                 "ip": instr.model_dump(mode="json"),
-                "mf": manifest,
+                "mf": {"manifest": manifest, "signature": signature, "key_id": key_id, "alg": alg},
                 "id": agent_id,
             },
         )

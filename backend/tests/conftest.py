@@ -32,6 +32,39 @@ def mock_auth():
 
 
 @pytest.fixture
+def mock_stack_auth_global(monkeypatch):
+    """Global mock for stack auth that works with middleware."""
+    from app.security import stack_auth
+
+    def fake_verify_token(token: str):
+        # Default mock behavior - can be overridden in specific tests
+        if token in ["user1-token", "fake-token", "fake"]:
+            return {"id": "user1", "selectedTeamId": "org1"}
+        elif token == "user2-token":
+            return {"id": "user2", "selectedTeamId": "org2"}
+        else:
+            raise Exception("Invalid token")
+
+    def fake_verify_team(team_id: str, token: str):
+        # Default mock behavior - can be overridden in specific tests
+        if token in ["user1-token", "fake-token", "fake"] and team_id in ["org1", "o1"]:
+            return {"id": team_id}
+        elif token == "user2-token" and team_id in ["org2", "o2"]:
+            return {"id": team_id}
+        else:
+            raise Exception("Not a member")
+
+    # Apply the mocks
+    monkeypatch.setattr(stack_auth, "verify_stack_access_token", fake_verify_token)
+    monkeypatch.setattr(stack_auth, "verify_team_membership", fake_verify_team)
+
+    return {
+        "verify_token": fake_verify_token,
+        "verify_team": fake_verify_team
+    }
+
+
+@pytest.fixture
 def mock_db():
     """Mock database session."""
     mock = MagicMock()

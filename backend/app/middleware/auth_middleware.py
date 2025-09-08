@@ -85,7 +85,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
             token = authz.split(" ", 1)[1]
             try:
-                profile = stack_auth.verify_stack_access_token(token)
+                # Use getattr to ensure we get the current (possibly mocked) function
+                verify_func = getattr(stack_auth, 'verify_stack_access_token')
+                profile = verify_func(token)
             except Exception:
                 return JSONResponse(
                     {"detail": "Invalid or expired access token"}, status_code=401
@@ -101,7 +103,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             team_id = request.headers.get("x-team-id")
             if team_id:
                 try:
-                    stack_auth.verify_team_membership(team_id, token)
+                    # Use getattr to ensure we get the current (possibly mocked) function
+                    verify_team_func = getattr(stack_auth, 'verify_team_membership')
+                    verify_team_func(team_id, token)
                     org_id = team_id
                 except Exception:
                     return JSONResponse(

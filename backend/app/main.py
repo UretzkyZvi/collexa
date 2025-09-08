@@ -31,13 +31,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Middleware stack (order matters - last added runs first)
-# Compression is opt-in and safe; place before audit/auth so it can decode bodies
-app.add_middleware(CompressionMiddleware)
+# Middleware stack
+# Ensure Auth runs before Audit so org_id is available for metrics/logging
+app.add_middleware(AuthMiddleware)
 app.add_middleware(AuditMiddleware)
+# Compression last so it can wrap responses after logging
+app.add_middleware(CompressionMiddleware)
 # TODO: Enable PolicyEnforcementMiddleware when OPA is configured
 # app.add_middleware(PolicyEnforcementMiddleware)
-app.add_middleware(AuthMiddleware)
 
 
 @app.get("/health")

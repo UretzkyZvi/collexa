@@ -41,18 +41,18 @@ async def preview_agent(
     tools, caps = select_capability_kit(bp)
     instr = render_instructions(bp, tools)
     manifest = produce_manifest(caps)
-# Sign manifest if possible (preview only returns manifest + signature info)
-try:
-    from app.services.manifest_signing import sign_manifest_if_possible
-    signed = sign_manifest_if_possible({**manifest, "agent_id": agent_id})
-    manifest = signed.get("manifest", manifest)
-    signature = signed.get("signature")
-    key_id = signed.get("key_id")
-    alg = signed.get("alg")
-except Exception:
-    signature = None
-    key_id = None
-    alg = None
+    # Sign manifest if possible (preview only returns manifest + signature info)
+    try:
+        from app.services.manifest_signing import sign_manifest_if_possible
+        signed = sign_manifest_if_possible({**manifest, "agent_id": agent_id})
+        manifest = signed.get("manifest", manifest)
+        signature = signed.get("signature")
+        key_id = signed.get("key_id")
+        alg = signed.get("alg")
+    except Exception:
+        signature = None
+        key_id = None
+        alg = None
 
     response: Dict[str, Any] = {
         "blueprint": bp.model_dump(mode="json"),

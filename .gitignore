@@ -40,3 +40,4 @@ backend/alembic/versions/__pycache__/
 *.swo
 
 backend/dev.db
+dev.db
